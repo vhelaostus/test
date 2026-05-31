@@ -488,10 +488,11 @@ function renderOwn(){
     const ownerR=(reg,yy)=>{const t=ov('개인',reg,yy,'총계');return t?+((t-ov('개인',reg,yy,'1채'))/t*100).toFixed(1):null;};
     const homeR=(reg,yy)=>{const h=cv(reg,yy,'개인소유주택');return h?+((h-ov('개인',reg,yy,'1채'))/h*100).toFixed(1):null;};
     const orate=ownerR(region,yc), hrate=homeR(region,yc), avg=cv(region,yc,'평균'), homes=cv(region,yc,'개인소유주택');
+    const multiHomes=homes-ov('개인',region,yc,'1채');
     setSub(`${region} · ${yc}년 · 개인·거주지역 기준 · 소유 집중도 (자료 ${cyears[0]}~${cyears[cyears.length-1]})`);
     document.getElementById('kpis').innerHTML=kpiHTML([
+      {k:'다주택자 보유 주택수',v:fmt(multiHomes),s:`호 (${hrate}%)`},
       {k:'다주택 소유자 비율',v:`${orate}`,s:'% (사람)'},
-      {k:'다주택 보유 주택 비율',v:`${hrate}`,s:'% (주택)'},
       {k:'1인당 평균 소유주택',v:avg.toFixed(2),s:'채'},
       {k:`${region} 개인소유주택`,v:fmt(homes),s:'호'}]);
     setInsight(`${region} ${yc}년 다주택자는 소유자의 <b>${orate}%</b>지만 개인소유주택의 <b>${hrate}%</b>를 보유합니다. 주택 점유율이 사람 비율보다 높을수록 소유가 집중된 것입니다. <span class="note">※개인·거주지역 기준 (공동소유로 약간의 오차 가능)</span>`);
