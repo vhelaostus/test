@@ -60,23 +60,39 @@
     </nav>
   </header>
   <main>
-    <iframe id="apt" class="active" src="apt/index.html" title="전국 매매·전월세 통계"></iframe>
+    <iframe id="apt" data-src="apt/index.html" title="전국 매매·전월세 통계"></iframe>
     <iframe id="housing" data-src="housing/index.html" title="전국 주택통계"></iframe>
   </main>
   <script>
     const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const id = tab.dataset.target;
-        tabs.forEach(t => t.classList.toggle('active', t === tab));
-        document.querySelectorAll('iframe').forEach(f => {
-          const on = f.id === id;
-          f.classList.toggle('active', on);
-          // lazy-load on first activation
-          if (on && !f.getAttribute('src') && f.dataset.src) f.src = f.dataset.src;
-        });
+    const STORE_KEY = 'activeTab';
+
+    function activate(id, save) {
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.target === id));
+      document.querySelectorAll('iframe').forEach(f => {
+        const on = f.id === id;
+        f.classList.toggle('active', on);
+        // lazy-load on first activation
+        if (on && !f.getAttribute('src') && f.dataset.src) f.src = f.dataset.src;
       });
+      if (save) {
+        try { localStorage.setItem(STORE_KEY, id); } catch (e) {}
+        if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => activate(tab.dataset.target, true));
     });
+
+    // restore last viewed tab on load (URL hash > saved choice > default)
+    const ids = Array.from(tabs).map(t => t.dataset.target);
+    const fromHash = location.hash.replace('#', '');
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch (e) {}
+    const initial = ids.includes(fromHash) ? fromHash
+                  : (ids.includes(saved) ? saved : ids[0]);
+    activate(initial, false);
   </script>
 </body>
 </html>
