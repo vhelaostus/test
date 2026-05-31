@@ -8,6 +8,7 @@
 <script src="area.js" onerror="this.dataset.f=1"></script>
 <script src="age.js" onerror="this.dataset.f=1"></script>
 <script src="supply.js" onerror="this.dataset.f=1"></script>
+<script src="own.js" onerror="this.dataset.f=1"></script>
 <style>
  :root{--bg:#0e1320;--card:#1b2435;--ink:#f6f9ff;--sub:#c3cee0;--line:#34405a;--acc:#6ba2ff;--acc2:#46dcb2;--warn:#ffc066;}
  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);
@@ -66,6 +67,7 @@
     <button class="navbtn" data-v="age">🏚️ 노후도 (건축연도)</button>
     <button class="navbtn" data-v="tenure">🔑 점유형태 (자가/전월세)</button>
     <button class="navbtn" data-v="supply">🏗️ 공급 (인허가·착공·준공)</button>
+    <button class="navbtn" data-v="own">👤 주택소유 (다주택자)</button>
   </div>
   <div class="navtitle">기준연도 <span style="color:var(--sub);">· 단일</span></div>
   <div class="chips" id="yearChips"></div>
@@ -89,7 +91,7 @@ const DEMO=(()=>{const R={'전국':19870,'서울특별시':3100,'경기도':4600
  const Y=['2015','2020','2024'],g={'2015':.86,'2020':.95,'2024':1},o=[];
  for(const[r,b]of Object.entries(R))for(const y of Y)for(const[t,f]of Object.entries(S))o.push({region:r,type:t,year:y,value:Math.round(b*1000*f*g[y])});return o;})();
 const HD=(window.HOUSING_DATA&&window.HOUSING_DATA.length)?window.HOUSING_DATA:DEMO;
-const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[];
+const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[], OWND=window.OWN_DATA||[];
 if(!(window.HOUSING_DATA&&window.HOUSING_DATA.length)) document.getElementById('demoBadge').style.display='inline-block';
 
 /* ===== 상수/순서/색 ===== */
@@ -120,12 +122,14 @@ function clampArea(y){y=+y;return String(Math.min(2024,Math.max(2015,y)));}
 function nearestLE(years,y){y=+y;let best=years[0];for(const a of years)if(+a<=y)best=a;return best;}
 
 /* ===== 상태 ===== */
-const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay'};
+const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',ownBasis:'개인',ownTab:'compose'};
 const mainRegion=()=>state.regions[0]||'전국';
 window.setSupMode=m=>{state.supMode=m;render();};
 window.setSupMeasure=m=>{state.supMeasure=m;render();};
 window.setSupTab=t=>{state.supTab=t;render();};
 window.setSupRegView=v=>{state.supRegView=v;render();};
+window.setOwnBasis=b=>{state.ownBasis=b;render();};
+window.setOwnTab=t=>{state.ownTab=t;render();};
 let charts={};
 if(window.Chart){Chart.defaults.animation=false;   // 애니메이션 제거
   Chart.defaults.elements.line.tension=0;          // 직선 연결
@@ -162,13 +166,13 @@ function buildRegionChips(){const c=document.getElementById('regionChips');c.inn
 document.getElementById('foot').innerHTML='출처: 통계청 주택총조사(주택수·평형·노후)<br>· 인구총조사(점유형태) · KOSIS<br>단위: 호 / 가구';
 
 /* ===== 렌더 디스패치 ===== */
-const TITLES={overview:'종류별 개요',region:'지역별 순위·비교',time:'시점별 추이',area:'평형 (연면적)',age:'노후도 (건축연도)',tenure:'점유형태 (자가/전월세)',supply:'공급 (인허가·착공·준공)'};
+const TITLES={overview:'종류별 개요',region:'지역별 순위·비교',time:'시점별 추이',area:'평형 (연면적)',age:'노후도 (건축연도)',tenure:'점유형태 (자가/전월세)',supply:'공급 (인허가·착공·준공)',own:'주택소유 (다주택자)'};
 function kpiHTML(items){return items.map(k=>`<div class="kpi"><div class="v">${k.v}${k.s?` <small>${k.s}</small>`:''}</div><div class="k">${k.k}</div></div>`).join('');}
 function render(){
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
   document.getElementById('pageTitle').textContent=TITLES[state.view];
   const g=document.getElementById('grid');g.innerHTML='';
-  ({overview:renderOverview,region:renderRegion,time:renderTime,area:renderArea,age:renderAge,tenure:renderTenure,supply:renderSupply})[state.view]();
+  ({overview:renderOverview,region:renderRegion,time:renderTime,area:renderArea,age:renderAge,tenure:renderTenure,supply:renderSupply,own:renderOwn})[state.view]();
 }
 function setSub(t){document.getElementById('pageSub').textContent=t;}
 function setInsight(html){document.getElementById('insight').innerHTML=html;}
@@ -249,7 +253,7 @@ function renderTime(){
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
       scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
   const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd'];
-  draw('cT2',{type:'line',data:{labels:H_YEARS,datasets:['전국',...state.regions.filter(x=>x!=='전국')].map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,spanGaps:true,
+  draw('cT2',{type:'line',data:{labels:H_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,spanGaps:true,
       data:H_YEARS.map(y=>htot(r,y))}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
       scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
@@ -412,7 +416,7 @@ function renderSupply(){
     if(rv==='overlay'){
       panels=toolbar+`<div class="panel full"><h3>시도별 ${meas} 추이 <span class="muted">(연도별 · 지역 칩으로 여러 시도 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cS5"></canvas></div></div>`;
     }else{
-      const sidos=['전국',...ALL_REGIONS.filter(r=>r!=='전국')];
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
       panels=toolbar+`<div style="grid-column:1/-1;margin-bottom:4px;" class="muted">연도별 인허가·착공·준공 · <span style="color:#ffc066">●인허가</span> <span style="color:#6ba2ff">●착공</span> <span style="color:#46dcb2">●준공</span> · ★=선택 지역</div>`
         +`<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">`
         +sidos.map((r,i)=>{const sel=state.regions.includes(r);
@@ -437,11 +441,11 @@ function renderSupply(){
   }else if(tab==='region'){
     if(state.supRegView==='overlay'){
       const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
-      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:['전국',...state.regions.filter(x=>x!=='전국')].map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>AN.get(`${meas}|${r}|전체|${y}`)||0)}))},
+      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>AN.get(`${meas}|${r}|전체|${y}`)||0)}))},
         options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
           scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
     }else{
-      const sidos=['전국',...ALL_REGIONS.filter(r=>r!=='전국')];
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
       sidos.forEach((r,i)=>{
         draw('cSR'+i,{type:'line',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:1.5,data:SUP_YEARS.map(y=>AN.get(`${m}|${r}|전체|${y}`)||0)}))},
           options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>items[0].label,label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
@@ -456,6 +460,57 @@ function renderSupply(){
     let head='<thead><tr><th>연도</th>'+MEAS.map(m=>`<th>${m}</th>`).join('')+'</tr></thead>';
     let body='<tbody>'+SUP_YEARS.slice().reverse().map(y=>`<tr><td>${y}</td>`+MEAS.map(m=>`<td>${fmt(sv(m,y))}</td>`).join('')+'</tr>').join('')+'</tbody>';
     document.getElementById('cS4').innerHTML=head+body;
+  }
+}
+
+/* ===== 8) 주택소유 (다주택자) ===== */
+function renderOwn(){
+  if(!OWND.length){noData('주택소유(다주택자)');return;}
+  const basis=state.ownBasis, region=mainRegion(), unit=basis==='개인'?'명':'가구';
+  const years=uniq(OWND.filter(d=>d.basis===basis).map(d=>d.year)).sort();
+  const y=state.year===ALL?lastOf(years):(years.includes(state.year)?state.year:nearestLE(years,state.year));
+  const ORD=basis==='개인'?['1채','2채','3채 이상']:['1채','2채','3채','4채','5채이상'];
+  const ov=(reg,yy,b)=>{const r=OWND.find(d=>d.basis===basis&&d.region===reg&&d.year===yy&&d.band===b);return r?(r.value||0):0;};
+  const total=ov(region,y,'총계')||ORD.reduce((s,b)=>s+ov(region,y,b),0);
+  const one=ov(region,y,'1채'), multi=total-one, rate=total?multi/total*100:0;
+  setSub(`${region} · ${y}년 · ${basis} 기준${state.year===ALL?' (전체→최신)':''} · 다주택=2채 이상 · 자료 ${years[0]}~${years[years.length-1]}`);
+  document.getElementById('kpis').innerHTML=kpiHTML([
+    {k:`${region} ${y}년 소유 ${basis}`,v:fmt(total),s:unit},
+    {k:'다주택(2채+)',v:fmt(multi),s:`${rate.toFixed(1)}%`},
+    {k:'1채',v:fmt(one),s:`${total?(one/total*100).toFixed(1):0}%`},
+    {k:'3채 이상',v:fmt(basis==='개인'?ov(region,y,'3채 이상'):ov(region,y,'3채')+ov(region,y,'4채')+ov(region,y,'5채이상')),s:''}]);
+  setInsight(`${region} ${y}년 ${basis} 기준 다주택(2채 이상)은 <b>${fmt(multi)}${unit}</b>로 전체 소유 ${basis}의 <b>${rate.toFixed(1)}%</b>. <span class="note">※소유 규모(매물 아님) · 통계청 주택소유통계</span>`);
+  const rrate=(reg,yy)=>{const t=ov(reg,yy,'총계');return t?+((t-ov(reg,yy,'1채'))/t*100).toFixed(1):null;};
+  const tab=state.ownTab||'compose';
+  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
+    <span class="seg"><button class="${basis==='개인'?'on':''}" onclick="setOwnBasis('개인')">개인</button><button class="${basis==='가구'?'on':''}" onclick="setOwnBasis('가구')">가구</button></span>
+    <span class="seg" style="margin-left:8px;"><button class="${tab==='compose'?'on':''}" onclick="setOwnTab('compose')">구성·추이</button><button class="${tab==='region'?'on':''}" onclick="setOwnTab('region')">시도별</button><button class="${tab==='table'?'on':''}" onclick="setOwnTab('table')">표</button></span></div>`;
+  let panels='';
+  if(tab==='compose'){
+    panels=`<div class="panel"><h3>소유 건수별 구성 <span class="muted">(${region} ${y}년)</span></h3><div class="chartbox"><canvas id="cO1"></canvas></div></div>
+      <div class="panel"><h3>다주택(2채+) 비율 추이 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cO2"></canvas></div></div>`;
+  }else if(tab==='region'){
+    panels=`<div class="panel full"><h3>시도별 다주택 비율 <span class="muted">(${y}년 · 선택 강조)</span></h3><div class="chartbox tall"><canvas id="cO3"></canvas></div></div>`;
+  }else{
+    panels=`<div class="panel full"><h3>시도 × 소유건수 <span class="muted">(${y}년 · ${unit})</span></h3><div class="tablewrap"><table id="cO4"></table></div></div>`;
+  }
+  document.getElementById('grid').innerHTML=toolbar+panels;
+  if(tab==='compose'){
+    draw('cO1',{type:'doughnut',data:{labels:ORD,datasets:[{data:ORD.map(b=>ov(region,y,b)),backgroundColor:SEQ,borderColor:'#1b2435',borderWidth:2}]},
+      options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}${unit} (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
+    draw('cO2',{type:'line',data:{labels:years,datasets:[{label:'다주택 비율',borderColor:'#ffc066',backgroundColor:'transparent',data:years.map(yy=>rrate(region,yy))}]},
+      options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+  }else if(tab==='region'){
+    const sidos=ALL_REGIONS.filter(r=>r!=='전국');
+    const rp=sidos.map(r=>[r,rrate(r,y)||0]).sort((a,b)=>b[1]-a[1]);
+    draw('cO3',{type:'bar',data:{labels:rp.map(p=>p[0].replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),datasets:[{data:rp.map(p=>p[1]),backgroundColor:rp.map(p=>state.regions.includes(p[0])?'#ffc066':'#6ba2ff')}]},
+      options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 다주택 ${c.parsed.x}%`}}},scales:{x:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
+  }else{
+    const cols=['총계',...ORD];
+    let head='<thead><tr><th>지역</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>다주택%</th></tr></thead>';
+    let body='<tbody>'+ALL_REGIONS.map(r=>{const t=ov(r,y,'총계');
+      return `<tr><td>${r}</td>`+cols.map(b=>`<td>${fmt(ov(r,y,b))}</td>`).join('')+`<td><b>${t?((t-ov(r,y,'1채'))/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
+    document.getElementById('cO4').innerHTML=head+body;
   }
 }
 
