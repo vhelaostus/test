@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko"><head><meta name="robots" content="noindex, nofollow, noarchive, nosnippet"><meta name="googlebot" content="noindex, nofollow">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>?꾧뎅 二쇳깮 ?듦퀎</title>
+<title>전국 주택 통계</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="data.js" onerror="this.dataset.f=1"></script>
 <script src="tenure.js" onerror="this.dataset.f=1"></script>
@@ -10,6 +10,7 @@
 <script src="supply.js" onerror="this.dataset.f=1"></script>
 <script src="own.js" onerror="this.dataset.f=1"></script>
 <script src="conc.js" onerror="this.dataset.f=1"></script>
+<script src="tenure_yr.js" onerror="this.dataset.f=1"></script>
 <style>
  :root{--bg:#0e1320;--card:#1b2435;--ink:#f6f9ff;--sub:#c3cee0;--line:#34405a;--acc:#6ba2ff;--acc2:#46dcb2;--warn:#ffc066;}
  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);
@@ -40,8 +41,8 @@
  .kpi .k{color:var(--sub);font-size:13px;margin-top:4px;}
  .shead{display:flex;align-items:baseline;gap:10px;margin:6px 0 2px;}
  .shead h2{font-size:19px;margin:0;} .shead .q{color:var(--sub);font-size:13.5px;}
- .insight{background:#12243f;border-left:3px solid var(--acc);color:#dce9ff;font-size:14.5px;
-   padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0 14px;}
+ .insight{background:#12243f;border-left:3px solid var(--acc);color:#dce9ff;font-size:14.5px;line-height:1.5;
+   padding:11px 14px;border-radius:0 8px 8px 0;margin:10px 0 14px;min-height:68px;}
  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;}
  .panel.full{grid-column:1/-1;} .panel h3{margin:0 0 12px;font-size:15px;font-weight:600;}
@@ -57,27 +58,27 @@
 <body>
 <div class="app">
 <aside class="sidebar">
-  <div class="brand">?룧 ?꾧뎅 二쇳깮 ?듦퀎 <span id="demoBadge" class="badge" style="display:none;">?덉떆 ?곗씠??/span>
-    <span>?듦퀎泥?二쇳깮珥앹“??룹씤援ъ킑議곗궗 (KOSIS)</span></div>
-  <div class="navtitle">?붾㈃</div>
+  <div class="brand">🏠 전국 주택 통계 <span id="demoBadge" class="badge" style="display:none;">예시 데이터</span>
+    <span>통계청 주택총조사·인구총조사 (KOSIS)</span></div>
+  <div class="navtitle">화면</div>
   <div class="nav" id="nav">
-    <button class="navbtn active" data-v="overview">?룜截?醫낅쪟蹂?媛쒖슂</button>
-    <button class="navbtn" data-v="region">?뱧 吏??퀎 ?쒖쐞쨌鍮꾧탳</button>
-    <button class="navbtn" data-v="time">?뱢 ?쒖젏蹂?異붿씠</button>
-    <button class="navbtn" data-v="area">?뱪 ?됲삎 (?곕㈃??</button>
-    <button class="navbtn" data-v="age">?룠截??명썑??(嫄댁텞?곕룄)</button>
-    <button class="navbtn" data-v="tenure">?뵎 ?먯쑀?뺥깭 (?먭?/?꾩썡??</button>
-    <button class="navbtn" data-v="supply">?룛截?怨듦툒 (?명뿀媛쨌李⑷났쨌以怨?</button>
-    <button class="navbtn" data-v="own">?뫀 二쇳깮?뚯쑀 (?ㅼ＜?앹옄)</button>
+    <button class="navbtn active" data-v="overview">🏘️ 종류별 개요</button>
+    <button class="navbtn" data-v="region">📍 지역별 순위·비교</button>
+    <button class="navbtn" data-v="time">📈 시점별 추이</button>
+    <button class="navbtn" data-v="area">📐 평형 (연면적)</button>
+    <button class="navbtn" data-v="age">🏚️ 노후도 (건축연도)</button>
+    <button class="navbtn" data-v="tenure">🔑 점유형태 (자가/전월세)</button>
+    <button class="navbtn" data-v="supply">🏗️ 공급 (인허가·착공·준공)</button>
+    <button class="navbtn" data-v="own">👤 주택소유 (다주택자)</button>
   </div>
-  <div class="navtitle">湲곗??곕룄 <span style="color:var(--sub);">쨌 ?⑥씪</span></div>
+  <div class="navtitle">기준연도 <span style="color:var(--sub);">· 단일</span></div>
   <div class="chips" id="yearChips"></div>
-  <div class="navtitle">吏??<span style="color:var(--sub);">쨌 ?ㅼ쨷(泥レ㎏=二쇱???</span></div>
+  <div class="navtitle">지역 <span style="color:var(--sub);">· 다중(첫째=주지역)</span></div>
   <div class="chips" id="regionChips"></div>
   <div class="muted" id="foot" style="margin-top:auto;font-size:11px;line-height:1.7;padding-top:16px;"></div>
 </aside>
 <main class="main"><div class="wrap">
-  <div class="shead"><h1 id="pageTitle">醫낅쪟蹂?媛쒖슂</h1></div>
+  <div class="shead"><h1 id="pageTitle">종류별 개요</h1></div>
   <div class="sub2" id="pageSub"></div>
   <div class="kpis" id="kpis"></div>
   <div class="insight" id="insight"></div>
@@ -86,33 +87,35 @@
 </div>
 
 <script>
-/* ===== ?곗씠??===== */
-const DEMO=(()=>{const R={'?꾧뎅':19870,'?쒖슱?밸퀎??:3100,'寃쎄린??:4600,'遺?곌킅??떆':1300};
- const S={?꾪뙆??.653,'?⑤룆二쇳깮':.193,'?곕┰二쇳깮':.03,'?ㅼ꽭?二쇳깮':.085,'鍮꾩＜嫄곗슜 嫄대Ъ ??二쇳깮':.039};
+/* ===== 데이터 ===== */
+const DEMO=(()=>{const R={'전국':19870,'서울특별시':3100,'경기도':4600,'부산광역시':1300};
+ const S={아파트:.653,'단독주택':.193,'연립주택':.03,'다세대주택':.085,'비주거용 건물 내 주택':.039};
  const Y=['2015','2020','2024'],g={'2015':.86,'2020':.95,'2024':1},o=[];
  for(const[r,b]of Object.entries(R))for(const y of Y)for(const[t,f]of Object.entries(S))o.push({region:r,type:t,year:y,value:Math.round(b*1000*f*g[y])});return o;})();
 const HD=(window.HOUSING_DATA&&window.HOUSING_DATA.length)?window.HOUSING_DATA:DEMO;
-const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[], OWND=window.OWN_DATA||[], CONC=window.CONC_DATA||[];
+const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[], OWND=window.OWN_DATA||[], CONC=window.CONC_DATA||[], TYD=window.TENURE_YR_DATA||[];
 if(!(window.HOUSING_DATA&&window.HOUSING_DATA.length)) document.getElementById('demoBadge').style.display='inline-block';
 
-/* ===== ?곸닔/?쒖꽌/??===== */
-const TYPE_ORDER=['?꾪뙆??,'?⑤룆二쇳깮','?곕┰二쇳깮','?ㅼ꽭?二쇳깮','鍮꾩＜嫄곗슜 嫄대Ъ ??二쇳깮'];
-const TYPE_COLORS={'?꾪뙆??:'#6ba2ff','?⑤룆二쇳깮':'#46dcb2','?곕┰二쇳깮':'#ffc066','?ㅼ꽭?二쇳깮':'#f48fb1','鍮꾩＜嫄곗슜 嫄대Ъ ??二쇳깮':'#9b8cff'};
-const BAND_ORDER=['20?≪씠??,'20??40??,'40??60??,'60??85??,'85??100??,'100??130??,'130??165??,'165??230??,'230?≪큹怨?];
-const ERA_ORDER=['1979???댁쟾','1980?꾨?','1990?꾨?','2000?꾨?','2010?꾨?','2020?꾨?'];
-const ERA_COLORS={'1979???댁쟾':'#ef5350','1980?꾨?':'#ff8a65','1990?꾨?':'#ffc066','2000?꾨?':'#9ccc65','2010?꾨?':'#46dcb2','2020?꾨?':'#6ba2ff'};
-const TEN_ORDER=['?먭?','?꾩꽭','蹂댁쬆遺?붿꽭','臾대낫利앹썡??,'?ш???,'臾댁긽'];
-const TEN_COLORS={'?먭?':'#46dcb2','?꾩꽭':'#6ba2ff','蹂댁쬆遺?붿꽭':'#ffc066','臾대낫利앹썡??:'#ff8a65','?ш???:'#f48fb1','臾댁긽':'#9aa7bd'};
-const REGION_ORDER=['?꾧뎅','?쒖슱?밸퀎??,'遺?곌킅??떆','?援ш킅??떆','?몄쿇愿묒뿭??,'愿묒＜愿묒뿭??,'??꾧킅??떆','?몄궛愿묒뿭??,'?몄쥌?밸퀎?먯튂??,'寃쎄린??,'媛뺤썝??,'異⑹껌遺곷룄','異⑹껌?⑤룄','?꾨씪遺곷룄','?꾨씪?⑤룄','寃쎌긽遺곷룄','寃쎌긽?⑤룄','?쒖＜??];
+/* ===== 상수/순서/색 ===== */
+const TYPE_ORDER=['아파트','단독주택','연립주택','다세대주택','비주거용 건물 내 주택'];
+const TYPE_COLORS={'아파트':'#6ba2ff','단독주택':'#46dcb2','연립주택':'#ffc066','다세대주택':'#f48fb1','비주거용 건물 내 주택':'#9b8cff'};
+const BAND_ORDER=['20㎡이하','20㎡~40㎡','40㎡~60㎡','60㎡~85㎡','85㎡~100㎡','100㎡~130㎡','130㎡~165㎡','165㎡~230㎡','230㎡초과'];
+const BAND_PY={'20㎡이하':'6평 이하','20㎡~40㎡':'6~12평','40㎡~60㎡':'12~18평','60㎡~85㎡':'18~26평','85㎡~100㎡':'26~30평','100㎡~130㎡':'30~39평','130㎡~165㎡':'39~50평','165㎡~230㎡':'50~70평','230㎡초과':'70평 초과'};
+const bandLbl=b=>(state.areaUnit==='㎡')?b:(BAND_PY[b]||b);
+const ERA_ORDER=['1979년 이전','1980년대','1990년대','2000년대','2010년대','2020년대'];
+const ERA_COLORS={'1979년 이전':'#ef5350','1980년대':'#ff8a65','1990년대':'#ffc066','2000년대':'#9ccc65','2010년대':'#46dcb2','2020년대':'#6ba2ff'};
+const TEN_ORDER=['자가','전세','보증부월세','무보증월세','사글세','무상'];
+const TEN_COLORS={'자가':'#46dcb2','전세':'#6ba2ff','보증부월세':'#ffc066','무보증월세':'#ff8a65','사글세':'#f48fb1','무상':'#9aa7bd'};
+const REGION_ORDER=['전국','서울특별시','부산광역시','대구광역시','인천광역시','광주광역시','대전광역시','울산광역시','세종특별자치시','경기도','강원도','충청북도','충청남도','전라북도','전라남도','경상북도','경상남도','제주도'];
 const SEQ=['#1b3a6b','#235086','#2f6aa6','#4f8cc9','#6ba2ff','#8fbaf6','#46dcb2','#7fe6c9','#b8f0e0'];
 
-/* ===== ?좏떥 ===== */
+/* ===== 유틸 ===== */
 const fmt=n=>n==null?'-':Math.round(n).toLocaleString('ko-KR');
 const uniq=a=>[...new Set(a)];
 const sumW=(arr,pred)=>arr.reduce((s,r)=>s+(pred(r)?(r.value||0):0),0);
 const orderBy=(arr,ord)=>[...arr].sort((a,b)=>{let x=ord.indexOf(a),y=ord.indexOf(b);if(x<0)x=99;if(y<0)y=99;return x-y;});
 function regionsSorted(list){return [...list].sort((a,b)=>{let x=REGION_ORDER.indexOf(a),y=REGION_ORDER.indexOf(b);if(x<0)x=99;if(y<0)y=99;return x-y||a.localeCompare(b,'ko');});}
-const ALL='?꾩껜';
+const ALL='전체';
 const H_YEARS=uniq(HD.map(d=>d.year)).sort();
 const AREA_YEARS=uniq(AD.map(d=>d.year)).sort();
 const AGE_YEARS=uniq(GD.map(d=>d.year)).sort();
@@ -122,9 +125,9 @@ const ALL_REGIONS=regionsSorted(uniq(HD.map(d=>d.region)));
 function clampArea(y){y=+y;return String(Math.min(2024,Math.max(2015,y)));}
 function nearestLE(years,y){y=+y;let best=years[0];for(const a of years)if(+a<=y)best=a;return best;}
 
-/* ===== ?곹깭 ===== */
-const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['?꾧뎅'],supMode:'year',supMeasure:'?명뿀媛',supTab:'trend',supRegView:'overlay',ownBasis:'媛쒖씤',ownTab:'compose',ownRegView:'trend'};
-const mainRegion=()=>state.regions[0]||'?꾧뎅';
+/* ===== 상태 ===== */
+const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',ownBasis:'개인',ownTab:'compose',ownRegView:'trend',tenTab:'type',timeTab:'type',timeType:'전체',areaUnit:'평'};
+const mainRegion=()=>state.regions[0]||'전국';
 window.setSupMode=m=>{state.supMode=m;render();};
 window.setSupMeasure=m=>{state.supMeasure=m;render();};
 window.setSupTab=t=>{state.supTab=t;render();};
@@ -132,31 +135,35 @@ window.setSupRegView=v=>{state.supRegView=v;render();};
 window.setOwnBasis=b=>{state.ownBasis=b;render();};
 window.setOwnTab=t=>{state.ownTab=t;render();};
 window.setOwnRegView=v=>{state.ownRegView=v;render();};
+window.setTenTab=t=>{state.tenTab=t;render();};
+window.setTimeTab=t=>{state.timeTab=t;render();};
+window.setTimeType=t=>{state.timeType=t;render();};
+window.setAreaUnit=u=>{state.areaUnit=u;render();};
 let charts={};
-if(window.Chart){Chart.defaults.animation=false;   // ?좊땲硫붿씠???쒓굅
-  Chart.defaults.elements.line.tension=0;          // 吏곸꽑 ?곌껐
-  Chart.defaults.elements.point.radius=2.5;        // ???쒖떆
+if(window.Chart){Chart.defaults.animation=false;   // 애니메이션 제거
+  Chart.defaults.elements.line.tension=0;          // 직선 연결
+  Chart.defaults.elements.point.radius=2.5;        // 점 표시
   Chart.defaults.elements.point.hoverRadius=5;}
 function draw(id,cfg){if(charts[id])charts[id].destroy();const el=document.getElementById(id);if(el)charts[id]=new Chart(el,cfg);}
 function baseOpts(extra){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}}},
   scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}}}},extra||{});}
 
-/* ===== ?ъ씠?쒕컮 援ъ꽦 ===== */
+/* ===== 사이드바 구성 ===== */
 const navEl=document.getElementById('nav');
 navEl.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;
   navEl.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x===b));render();});
 function buildYearChips(){const c=document.getElementById('yearChips');c.innerHTML='';
   const mk=(val,label,extra)=>{const s=document.createElement('span');s.className='chip'+(val===state.year?' on':'')+(extra||'');s.textContent=label;
     s.onclick=()=>{state.year=val;buildYearChips();render();};c.appendChild(s);};
-  mk(ALL,'?꾩껜',' all');
+  mk(ALL,'전체',' all');
   H_YEARS.forEach(y=>mk(y,y));}
 function buildRegionChips(){const c=document.getElementById('regionChips');c.innerHTML='';
   ALL_REGIONS.forEach(r=>{const s=document.createElement('span');
-    s.className='chip'+(state.regions.includes(r)?' on':'')+(r==='?꾧뎅'?' all':'');
-    s.textContent=r==='?꾧뎅'?'?꾧뎅(?꾩껜)':r.replace(/?밸퀎??愿묒뿭???밸퀎?먯튂???밸퀎?먯튂????/,'');
-    s.title=r==='?꾧뎅'?'?꾧뎅 = ?꾩껜 ?좏깮/?댁젣':r;
+    s.className='chip'+(state.regions.includes(r)?' on':'')+(r==='전국'?' all':'');
+    s.textContent=r==='전국'?'전국(전체)':r.replace(/특별시|광역시|특별자치시|특별자치도|도$/,'');
+    s.title=r==='전국'?'전국 = 전체 선택/해제':r;
     s.onclick=()=>{
-      if(r==='?꾧뎅'){
+      if(r==='전국'){
         const allSel=ALL_REGIONS.every(x=>state.regions.includes(x));
         state.regions=allSel?[]:[...ALL_REGIONS];
       }else{
@@ -165,10 +172,10 @@ function buildRegionChips(){const c=document.getElementById('regionChips');c.inn
       }
       buildRegionChips();render();};
     c.appendChild(s);});}
-document.getElementById('foot').innerHTML='異쒖쿂: ?듦퀎泥?二쇳깮珥앹“??二쇳깮?샕룻룊?빧룸끂??<br>쨌 ?멸뎄珥앹“???먯쑀?뺥깭) 쨌 KOSIS<br>?⑥쐞: ??/ 媛援?;
+document.getElementById('foot').innerHTML='출처: 통계청 주택총조사(주택수·평형·노후)<br>· 인구총조사(점유형태) · KOSIS<br>단위: 호 / 가구';
 
-/* ===== ?뚮뜑 ?붿뒪?⑥튂 ===== */
-const TITLES={overview:'醫낅쪟蹂?媛쒖슂',region:'吏??퀎 ?쒖쐞쨌鍮꾧탳',time:'?쒖젏蹂?異붿씠',area:'?됲삎 (?곕㈃??',age:'?명썑??(嫄댁텞?곕룄)',tenure:'?먯쑀?뺥깭 (?먭?/?꾩썡??',supply:'怨듦툒 (?명뿀媛쨌李⑷났쨌以怨?',own:'二쇳깮?뚯쑀 (?ㅼ＜?앹옄)'};
+/* ===== 렌더 디스패치 ===== */
+const TITLES={overview:'종류별 개요',region:'지역별 순위·비교',time:'시점별 추이',area:'평형 (연면적)',age:'노후도 (건축연도)',tenure:'점유형태 (자가/전월세)',supply:'공급 (인허가·착공·준공)',own:'주택소유 (다주택자)'};
 function kpiHTML(items){return items.map(k=>`<div class="kpi"><div class="v">${k.v}${k.s?` <small>${k.s}</small>`:''}</div><div class="k">${k.k}</div></div>`).join('');}
 function render(){
   try{localStorage.setItem('housingDash',JSON.stringify(state));}catch(e){}
@@ -180,417 +187,471 @@ function render(){
 function setSub(t){document.getElementById('pageSub').textContent=t;}
 function setInsight(html){document.getElementById('insight').innerHTML=html;}
 
-/* ===== 1) 醫낅쪟蹂?媛쒖슂 ===== */
+/* ===== 1) 종류별 개요 ===== */
 function renderOverview(){
   const region=mainRegion();
   const y=state.year===ALL?lastOf(H_YEARS):state.year;
-  setSub(`${region} 쨌 ${state.year===ALL?`?꾩껜 ??理쒖떊 ${y}??:`${y}??} 湲곗? (?ш퀬???쒖젏 ?ㅻ깄??`);
+  setSub(`${region} · ${state.year===ALL?`전체 → 최신 ${y}년`:`${y}년`} 기준 (재고는 시점 스냅샷)`);
   const ry=HD.filter(d=>d.region===region&&d.year===y);
   const types=orderBy(uniq(ry.map(d=>d.type)),TYPE_ORDER);
   const total=sumW(ry,()=>true);
   const v=t=>sumW(ry,d=>d.type===t);
-  const apt=v('?꾪뙆??),single=v('?⑤룆二쇳깮');
+  const apt=v('아파트'),single=v('단독주택');
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${y}??珥앹＜??,v:fmt(total),s:'??},
-    {k:'?꾪뙆??,v:fmt(apt),s:`${total?(apt/total*100).toFixed(1):0}%`},
-    {k:'?⑤룆二쇳깮',v:fmt(single),s:`${total?(single/total*100).toFixed(1):0}%`},
-    {k:'二쇳깮 醫낅쪟',v:types.length,s:'醫?}]);
-  setInsight(`${region} ${y}??珥앹＜?앹? <b>${fmt(total)}??/b>, 洹몄쨷 ?꾪뙆?멸? <b>${total?(apt/total*100).toFixed(1):0}%</b>濡?媛??留롮뒿?덈떎.`);
+    {k:`${region} ${y}년 총주택`,v:fmt(total),s:'호'},
+    {k:'아파트',v:fmt(apt),s:`${total?(apt/total*100).toFixed(1):0}%`},
+    {k:'단독주택',v:fmt(single),s:`${total?(single/total*100).toFixed(1):0}%`},
+    {k:'주택 종류',v:types.length,s:'종'}]);
+  setInsight(`${region} ${y}년 총주택은 <b>${fmt(total)}호</b>, 그중 아파트가 <b>${total?(apt/total*100).toFixed(1):0}%</b>로 가장 많습니다.`);
   document.getElementById('grid').innerHTML=`
-    <div class="panel"><h3>醫낅쪟蹂?援ъ꽦</h3><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
-    <div class="panel"><h3>醫낅쪟蹂?二쇳깮??/h3><div class="chartbox"><canvas id="cBar"></canvas></div></div>`;
+    <div class="panel"><h3>종류별 구성</h3><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
+    <div class="panel"><h3>종류별 주택수</h3><div class="chartbox"><canvas id="cBar"></canvas></div></div>`;
   draw('cDonut',{type:'doughnut',data:{labels:types,datasets:[{data:types.map(v),backgroundColor:types.map(t=>TYPE_COLORS[t]),borderColor:'#1b2435',borderWidth:2}]},
-    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}??(${(c.parsed/total*100).toFixed(1)}%)`}}}})});
+    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}호 (${(c.parsed/total*100).toFixed(1)}%)`}}}})});
   draw('cBar',{type:'bar',data:{labels:types,datasets:[{data:types.map(v),backgroundColor:types.map(t=>TYPE_COLORS[t])}]},
-    options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)}??}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
+    options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)}호`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
 }
 
-/* ===== 2) 吏??퀎 ?쒖쐞쨌鍮꾧탳 ===== */
+/* ===== 2) 지역별 순위·비교 ===== */
 function renderRegion(){
   const y=state.year===ALL?lastOf(H_YEARS):state.year;
-  setSub(`${state.year===ALL?`?꾩껜 ??理쒖떊 ${y}??:`${y}??} 쨌 ?쒕룄蹂?(?좏깮 吏??媛뺤“)`);
-  const sidos=ALL_REGIONS.filter(r=>r!=='?꾧뎅');
+  setSub(`${state.year===ALL?`전체 → 최신 ${y}년`:`${y}년`} · 시도별 (선택 지역 강조)`);
+  const sidos=ALL_REGIONS.filter(r=>r!=='전국');
   const tot=r=>sumW(HD,d=>d.region===r&&d.year===y);
   const pairs=sidos.map(r=>[r,tot(r)]).sort((a,b)=>b[1]-a[1]);
-  const nat=tot('?꾧뎅');
+  const nat=tot('전국');
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`?꾧뎅 ${y}??珥앹＜??,v:fmt(nat),s:'??},
-    {k:'理쒕떎 ?쒕룄',v:pairs[0][0].replace(/?밸퀎??愿묒뿭????/,''),s:`${fmt(pairs[0][1])}??},
-    {k:'?쒕룄 ??,v:pairs.length,s:'媛?}]);
-  setInsight(`${y}??二쇳깮??媛??留롮? ?쒕룄??<b>${pairs[0][0]}</b> (${fmt(pairs[0][1])}??, ?ㅼ쓬? ${pairs[1][0]} ?낅땲??`);
+    {k:`전국 ${y}년 총주택`,v:fmt(nat),s:'호'},
+    {k:'최다 시도',v:pairs[0][0].replace(/특별시|광역시|도$/,''),s:`${fmt(pairs[0][1])}호`},
+    {k:'시도 수',v:pairs.length,s:'개'}]);
+  setInsight(`${y}년 주택이 가장 많은 시도는 <b>${pairs[0][0]}</b> (${fmt(pairs[0][1])}호), 다음은 ${pairs[1][0]} 입니다.`);
   document.getElementById('grid').innerHTML=`
-    <div class="panel full"><h3>?쒕룄蹂?珥앹＜?앹닔 <span class="muted">(${y}??</span></h3><div class="chartbox tall"><canvas id="cRank"></canvas></div></div>
-    <div class="panel full"><h3>吏??횞 醫낅쪟 援ъ꽦 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cMix"></canvas></div></div>`;
+    <div class="panel full"><h3>시도별 총주택수 <span class="muted">(${y}년)</span></h3><div class="chartbox tall"><canvas id="cRank"></canvas></div></div>
+    <div class="panel full"><h3>지역 × 종류 구성 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cMix"></canvas></div></div>`;
   const sel=state.regions;
-  draw('cRank',{type:'bar',data:{labels:pairs.map(p=>p[0].replace(/?밸퀎??愿묒뿭???밸퀎?먯튂???밸퀎?먯튂????/,'')),
+  draw('cRank',{type:'bar',data:{labels:pairs.map(p=>p[0].replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),
     datasets:[{data:pairs.map(p=>p[1]),backgroundColor:pairs.map(p=>sel.includes(p[0])?'#ffc066':'#6ba2ff')}]},
-    options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.x)}??}}},
+    options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.x)}호`}}},
       scales:{x:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
   const types=orderBy(uniq(HD.map(d=>d.type)),TYPE_ORDER);
   const labs=pairs.map(p=>p[0]);
-  draw('cMix',{type:'bar',data:{labels:labs.map(r=>r.replace(/?밸퀎??愿묒뿭???밸퀎?먯튂???밸퀎?먯튂????/,'')),
+  draw('cMix',{type:'bar',data:{labels:labs.map(r=>r.replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),
     datasets:types.map(t=>({label:t,backgroundColor:TYPE_COLORS[t],
       data:labs.map(r=>{const tt=tot(r),v=sumW(HD,d=>d.region===r&&d.year===y&&d.type===t);return tt?+(100*v/tt).toFixed(1):0;})}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
       scales:{x:{stacked:true,ticks:{color:'#c3cee0'},grid:{display:false}},y:{stacked:true,max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
 }
 
-/* ===== 3) ?쒖젏蹂?異붿씠 ===== */
+/* ===== 3) 시점별 추이 ===== */
 function renderTime(){
   const region=mainRegion();
-  setSub(`${region} 醫낅쪟蹂?異붿씠 쨌 ??湲곌컙 ?쒖떆(?곕룄 ?꾪꽣 臾닿?) 쨌 吏??移⑹쑝濡??щ윭 怨?寃뱀퀜 鍮꾧탳`);
+  const tt=state.timeTab||'type';
   const types=orderBy(uniq(HD.map(d=>d.type)),TYPE_ORDER);
   const hv=(r,t,y)=>{const a=HD.filter(d=>d.region===r&&d.type===t&&d.year===y);return a.length?sumW(a,()=>true):null;};
   const htot=(r,y)=>{const a=HD.filter(d=>d.region===r&&d.year===y);return a.length?sumW(a,()=>true):null;};
-  const apt75=hv(region,'?꾪뙆??,H_YEARS[0]),apt24=hv(region,'?꾪뙆??,H_YEARS[H_YEARS.length-1]);
+  const TYMAP={전체:null,아파트:'아파트',단독:'단독주택',연립:'연립주택',다세대:'다세대주택',비주거용:'비주거용 건물 내 주택'};
+  const sel=state.timeType||'전체';
+  const typeSeg=`<span class="seg">${Object.keys(TYMAP).map(k=>`<button class="${sel===k?'on':''}" onclick="setTimeType('${k}')">${k}</button>`).join('')}</span>`;
+  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+    <span class="seg"><button class="${tt==='type'?'on':''}" onclick="setTimeTab('type')">종류별 (한 지역)</button><button class="${tt==='region'?'on':''}" onclick="setTimeTab('region')">지역별 비교</button></span>${tt==='region'?typeSeg:''}</div>`;
+  const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
+
+  if(tt==='region'){
+    const ftype=TYMAP[sel];
+    const getv=(r,y)=>ftype?hv(r,ftype,y):htot(r,y);
+    const yr0=H_YEARS[0], yrN=lastOf(H_YEARS);
+    const nat0=getv('전국',yr0), natN=getv('전국',yrN);
+    setSub(`지역별 ${sel} 연도 추이 · ${yr0}~${yrN} · 지역 칩으로 여러 시도 겹쳐 비교`);
+    document.getElementById('kpis').innerHTML=kpiHTML([
+      {k:`전국 ${sel} ${yr0}`,v:fmt(nat0),s:'호'},
+      {k:`전국 ${sel} ${yrN}`,v:fmt(natN),s:'호'},
+      {k:'증가',v:nat0?`${(natN/nat0).toFixed(1)}배`:'-',s:''},
+      {k:'비교 지역',v:state.regions.length,s:'곳'}]);
+    setInsight(`선택한 지역들의 <b>${sel}</b> 주택수 추이를 ${yr0}~${yrN}로 겹쳐 비교합니다. 지역 칩에서 시도를 추가하세요. <span class="note">※단위 호 · 2015년부터 등록센서스 방식</span>`);
+    document.getElementById('grid').innerHTML=toolbar+`<div class="panel full"><h3>지역별 ${sel} 추이 <span class="muted">(${yr0}~${yrN} · 호)</span></h3><div class="chartbox tall"><canvas id="cT2"></canvas></div></div>`;
+    draw('cT2',{type:'line',data:{labels:H_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',spanGaps:true,data:H_YEARS.map(y=>getv(r,y))}))},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
+        scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
+    return;
+  }
+
+  const apt75=hv(region,'아파트',H_YEARS[0]),apt24=hv(region,'아파트',lastOf(H_YEARS));
+  setSub(`${region} 종류별 추이 · 전 기간 표시 · 여러 지역 비교는 '지역별 비교' 탭`);
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ?꾪뙆??${H_YEARS[0]}`,v:fmt(apt75),s:'??},
-    {k:`${region} ?꾪뙆??${H_YEARS[H_YEARS.length-1]}`,v:fmt(apt24),s:'??},
-    {k:'?꾪뙆??利앷?',v:apt75?`${(apt24/apt75).toFixed(1)}諛?:'-',s:''}]);
-  setInsight(`${region} ?꾪뙆?몃뒗 ${H_YEARS[0]}??${fmt(apt75)}????${H_YEARS[H_YEARS.length-1]}??<b>${fmt(apt24)}??/b>濡???${apt75?(apt24/apt75).toFixed(1):'-'}諛??섏뿀?듬땲?? <span class="note">??015?꾨????깅줉?쇱꽌??諛⑹떇(2010??015 ?⑥젅 媛??</span>`);
-  document.getElementById('grid').innerHTML=`
-    <div class="panel full"><h3>${region} 醫낅쪟蹂?異붿씠 <span class="muted">(${H_YEARS[0]}~${H_YEARS[H_YEARS.length-1]})</span></h3><div class="chartbox tall"><canvas id="cT1"></canvas></div></div>
-    <div class="panel full"><h3>珥앹＜??異붿씠 ??吏??鍮꾧탳</h3><div class="chartbox tall"><canvas id="cT2"></canvas></div></div>`;
-  draw('cT1',{type:'line',data:{labels:H_YEARS,datasets:types.map(t=>({label:t,borderColor:TYPE_COLORS[t],backgroundColor:'transparent',tension:0,spanGaps:true,
+    {k:`${region} 아파트 ${H_YEARS[0]}`,v:fmt(apt75),s:'호'},
+    {k:`${region} 아파트 ${lastOf(H_YEARS)}`,v:fmt(apt24),s:'호'},
+    {k:'아파트 증가',v:apt75?`${(apt24/apt75).toFixed(1)}배`:'-',s:''}]);
+  setInsight(`${region} 아파트는 ${H_YEARS[0]}년 ${fmt(apt75)}호 → ${lastOf(H_YEARS)}년 <b>${fmt(apt24)}호</b>로 약 ${apt75?(apt24/apt75).toFixed(1):'-'}배 늘었습니다. <span class="note">※2015년부터 등록센서스 방식(2010↔2015 단절 가능)</span>`);
+  document.getElementById('grid').innerHTML=toolbar+`<div class="panel full"><h3>${region} 종류별 추이 <span class="muted">(${H_YEARS[0]}~${lastOf(H_YEARS)})</span></h3><div class="chartbox tall"><canvas id="cT1"></canvas></div></div>`;
+  draw('cT1',{type:'line',data:{labels:H_YEARS,datasets:types.map(t=>({label:t,borderColor:TYPE_COLORS[t],backgroundColor:'transparent',spanGaps:true,
       data:H_YEARS.map(y=>hv(region,t,y))}))},
-    options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
-      scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
-  const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd'];
-  draw('cT2',{type:'line',data:{labels:H_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,spanGaps:true,
-      data:H_YEARS.map(y=>htot(r,y))}))},
-    options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
+    options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
       scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
 }
 
-/* ===== 4) ?됲삎 (?곕㈃?? ===== */
+/* ===== 4) 평형 (연면적) ===== */
 function renderArea(){
-  if(!AD.length){noData('?됲삎(?곕㈃??');return;}
+  if(!AD.length){noData('평형(연면적)');return;}
   const region=mainRegion();
   const y=state.year===ALL?lastOf(AREA_YEARS):clampArea(state.year);
-  setSub(`${region} 쨌 ${y}??(?곕㈃???먮즺 2015~2024)${state.year===ALL?' 쨌 ?꾩껜?믪턀??:(y!==state.year?` 쨌 ?좏깮 ${state.year}??{y}`:'')}`);
+  setSub(`${region} · ${y}년 (연면적 자료 2015~2024)${state.year===ALL?' · 전체→최신':(y!==state.year?` · 선택 ${state.year}→${y}`:'')}`);
   const types=orderBy(uniq(AD.map(d=>d.type)),TYPE_ORDER);
   const av=(t,b)=>sumW(AD,d=>d.region===region&&d.year===y&&d.type===t&&d.band===b);
   const bandTot=b=>sumW(AD,d=>d.region===region&&d.year===y&&d.band===b);
   const total=sumW(AD,d=>d.region===region&&d.year===y);
-  const small=BAND_ORDER.slice(0,4).reduce((s,b)=>s+bandTot(b),0); // 85???댄븯
-  const mid=bandTot('60??85??);
+  const small=BAND_ORDER.slice(0,4).reduce((s,b)=>s+bandTot(b),0); // 85㎡(약 26평) 이하
+  const mid=bandTot('60㎡~85㎡');
+  const py=state.areaUnit==='평';
+  const lblSmall=py?'26평 이하(중소형)':'85㎡ 이하(중소형)', lblMid=py?'18~26평 비중':'60~85㎡ 비중';
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${y}??二쇳깮`,v:fmt(total),s:'??},
-    {k:'85???댄븯(以묒냼??',v:`${total?(small/total*100).toFixed(1):0}%`,s:fmt(small)+'??},
-    {k:'60~85??鍮꾩쨷',v:`${total?(mid/total*100).toFixed(1):0}%`,s:fmt(mid)+'??}]);
-  setInsight(`${region} 二쇳깮??<b>${total?(small/total*100).toFixed(1):0}%</b>媛 85???댄븯 以묒냼?뺤엯?덈떎.`);
-  document.getElementById('grid').innerHTML=`
-    <div class="panel full"><h3>醫낅쪟蹂??됲삎 援ъ꽦 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cA1"></canvas></div></div>
-    <div class="panel"><h3>?꾩껜 ?됲삎 遺꾪룷 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cA2"></canvas></div></div>
-    <div class="panel"><h3>?됲삎 횞 醫낅쪟 (??</h3><div class="tablewrap"><table id="cA3"></table></div></div>`;
-  draw('cA1',{type:'bar',data:{labels:types,datasets:BAND_ORDER.map((b,i)=>({label:b,backgroundColor:SEQ[i%SEQ.length],
+    {k:`${region} ${y}년 주택`,v:fmt(total),s:'호'},
+    {k:lblSmall,v:`${total?(small/total*100).toFixed(1):0}%`,s:fmt(small)+'호'},
+    {k:lblMid,v:`${total?(mid/total*100).toFixed(1):0}%`,s:fmt(mid)+'호'}]);
+  setInsight(`${region} 주택의 <b>${total?(small/total*100).toFixed(1):0}%</b>가 ${py?'26평':'85㎡'} 이하 중소형입니다. <span class="note">※1평=3.3058㎡ 환산(연면적 기준, 분양평형 아님)</span>`);
+  const unitSeg=`<div style="grid-column:1/-1;margin-bottom:6px;"><span class="seg"><button class="${py?'on':''}" onclick="setAreaUnit('평')">평</button><button class="${py?'':'on'}" onclick="setAreaUnit('㎡')">㎡</button></span></div>`;
+  document.getElementById('grid').innerHTML=unitSeg+`
+    <div class="panel full"><h3>종류별 평형 구성 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cA1"></canvas></div></div>
+    <div class="panel"><h3>전체 평형 분포 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cA2"></canvas></div></div>
+    <div class="panel"><h3>평형 × 종류 (호)</h3><div class="tablewrap"><table id="cA3"></table></div></div>`;
+  draw('cA1',{type:'bar',data:{labels:types,datasets:BAND_ORDER.map((b,i)=>({label:bandLbl(b),backgroundColor:SEQ[i%SEQ.length],
       data:types.map(t=>{const tt=sumW(AD,d=>d.region===region&&d.year===y&&d.type===t);const v=av(t,b);return tt?+(100*v/tt).toFixed(1):0;})}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
       scales:{x:{stacked:true,ticks:{color:'#c3cee0'},grid:{display:false}},y:{stacked:true,max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
-  draw('cA2',{type:'doughnut',data:{labels:BAND_ORDER,datasets:[{data:BAND_ORDER.map(bandTot),backgroundColor:BAND_ORDER.map((b,i)=>SEQ[i%SEQ.length]),borderColor:'#1b2435',borderWidth:2}]},
-    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}??(${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
-  let head='<thead><tr><th>醫낅쪟</th>'+BAND_ORDER.map(b=>`<th>${b}</th>`).join('')+'<th>?⑷퀎</th></tr></thead>';
+  draw('cA2',{type:'doughnut',data:{labels:BAND_ORDER.map(bandLbl),datasets:[{data:BAND_ORDER.map(bandTot),backgroundColor:BAND_ORDER.map((b,i)=>SEQ[i%SEQ.length]),borderColor:'#1b2435',borderWidth:2}]},
+    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}호 (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
+  let head='<thead><tr><th>종류</th>'+BAND_ORDER.map(b=>`<th>${bandLbl(b)}</th>`).join('')+'<th>합계</th></tr></thead>';
   let body='<tbody>'+types.map(t=>{const cells=BAND_ORDER.map(b=>av(t,b));return `<tr><td>${t}</td>`+cells.map(v=>`<td>${fmt(v)}</td>`).join('')+`<td><b>${fmt(cells.reduce((a,b)=>a+b,0))}</b></td></tr>`;}).join('')+'</tbody>';
   document.getElementById('cA3').innerHTML=head+body;
 }
 
-/* ===== 5) ?명썑??(嫄댁텞?곕룄) ===== */
+/* ===== 5) 노후도 (건축연도) ===== */
 function renderAge(){
-  if(!GD.length){noData('?명썑??嫄댁텞?곕룄)');return;}
+  if(!GD.length){noData('노후도(건축연도)');return;}
   const region=mainRegion();
   const y=state.year===ALL?lastOf(AGE_YEARS):clampArea(state.year);
-  setSub(`${region} 쨌 ${y}??(嫄댁텞?곕룄 ?먮즺 2015~2024)${state.year===ALL?' 쨌 ?꾩껜?믪턀??:(y!==state.year?` 쨌 ?좏깮 ${state.year}??{y}`:'')}`);
+  setSub(`${region} · ${y}년 (건축연도 자료 2015~2024)${state.year===ALL?' · 전체→최신':(y!==state.year?` · 선택 ${state.year}→${y}`:'')}`);
   const types=orderBy(uniq(GD.map(d=>d.type)),TYPE_ORDER);
   const gv=(t,e)=>sumW(GD,d=>d.region===region&&d.year===y&&d.type===t&&d.era===e);
   const eraTot=e=>sumW(GD,d=>d.region===region&&d.year===y&&d.era===e);
   const total=sumW(GD,d=>d.region===region&&d.year===y);
-  const old=['1979???댁쟾','1980?꾨?','1990?꾨?'].reduce((s,e)=>s+eraTot(e),0); // 2000???댁쟾
-  const neu=['2010?꾨?','2020?꾨?'].reduce((s,e)=>s+eraTot(e),0);
-  const aptOldT=sumW(GD,d=>d.region===region&&d.year===y&&d.type==='?꾪뙆??);
-  const aptOld=['1979???댁쟾','1980?꾨?','1990?꾨?'].reduce((s,e)=>s+sumW(GD,d=>d.region===region&&d.year===y&&d.type==='?꾪뙆??&&d.era===e),0);
-  const sgOldT=sumW(GD,d=>d.region===region&&d.year===y&&d.type==='?⑤룆二쇳깮');
-  const sgOld=['1979???댁쟾','1980?꾨?','1990?꾨?'].reduce((s,e)=>s+sumW(GD,d=>d.region===region&&d.year===y&&d.type==='?⑤룆二쇳깮'&&d.era===e),0);
+  const old=['1979년 이전','1980년대','1990년대'].reduce((s,e)=>s+eraTot(e),0); // 2000년 이전
+  const neu=['2010년대','2020년대'].reduce((s,e)=>s+eraTot(e),0);
+  const aptOldT=sumW(GD,d=>d.region===region&&d.year===y&&d.type==='아파트');
+  const aptOld=['1979년 이전','1980년대','1990년대'].reduce((s,e)=>s+sumW(GD,d=>d.region===region&&d.year===y&&d.type==='아파트'&&d.era===e),0);
+  const sgOldT=sumW(GD,d=>d.region===region&&d.year===y&&d.type==='단독주택');
+  const sgOld=['1979년 이전','1980년대','1990년대'].reduce((s,e)=>s+sumW(GD,d=>d.region===region&&d.year===y&&d.type==='단독주택'&&d.era===e),0);
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${y}??二쇳깮`,v:fmt(total),s:'??},
-    {k:'2000???댁쟾 以怨?,v:`${total?(old/total*100).toFixed(1):0}%`,s:fmt(old)+'??},
-    {k:'2010???댄썑(?좎텞)',v:`${total?(neu/total*100).toFixed(1):0}%`,s:fmt(neu)+'??}]);
-  setInsight(`2000???댁쟾 以怨?鍮꾩쑉: ?⑤룆二쇳깮 <b>${sgOldT?(sgOld/sgOldT*100).toFixed(1):0}%</b> vs ?꾪뙆??<b>${aptOldT?(aptOld/aptOldT*100).toFixed(1):0}%</b> ???⑤룆二쇳깮???⑥뵮 ?명썑?덉뒿?덈떎.`);
+    {k:`${region} ${y}년 주택`,v:fmt(total),s:'호'},
+    {k:'2000년 이전 준공',v:`${total?(old/total*100).toFixed(1):0}%`,s:fmt(old)+'호'},
+    {k:'2010년 이후(신축)',v:`${total?(neu/total*100).toFixed(1):0}%`,s:fmt(neu)+'호'}]);
+  setInsight(`2000년 이전 준공 비율: 단독주택 <b>${sgOldT?(sgOld/sgOldT*100).toFixed(1):0}%</b> vs 아파트 <b>${aptOldT?(aptOld/aptOldT*100).toFixed(1):0}%</b> — 단독주택이 훨씬 노후했습니다.`);
   document.getElementById('grid').innerHTML=`
-    <div class="panel full"><h3>醫낅쪟蹂?嫄댁텞?곕룄(?쒕?) 援ъ꽦 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cG1"></canvas></div></div>
-    <div class="panel"><h3>?꾩껜 嫄댁텞?곕룄 遺꾪룷 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cG2"></canvas></div></div>
-    <div class="panel"><h3>?쒕? 횞 醫낅쪟 (??</h3><div class="tablewrap"><table id="cG3"></table></div></div>`;
+    <div class="panel full"><h3>종류별 건축연도(시대) 구성 <span class="muted">(100%)</span></h3><div class="chartbox tall"><canvas id="cG1"></canvas></div></div>
+    <div class="panel"><h3>전체 건축연도 분포 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cG2"></canvas></div></div>
+    <div class="panel"><h3>시대 × 종류 (호)</h3><div class="tablewrap"><table id="cG3"></table></div></div>`;
   draw('cG1',{type:'bar',data:{labels:types,datasets:ERA_ORDER.map(e=>({label:e,backgroundColor:ERA_COLORS[e],
       data:types.map(t=>{const tt=sumW(GD,d=>d.region===region&&d.year===y&&d.type===t);const v=gv(t,e);return tt?+(100*v/tt).toFixed(1):0;})}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
       scales:{x:{stacked:true,ticks:{color:'#c3cee0'},grid:{display:false}},y:{stacked:true,max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
   draw('cG2',{type:'doughnut',data:{labels:ERA_ORDER,datasets:[{data:ERA_ORDER.map(eraTot),backgroundColor:ERA_ORDER.map(e=>ERA_COLORS[e]),borderColor:'#1b2435',borderWidth:2}]},
-    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}??(${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
-  let head='<thead><tr><th>醫낅쪟</th>'+ERA_ORDER.map(e=>`<th>${e}</th>`).join('')+'<th>?⑷퀎</th></tr></thead>';
+    options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}호 (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
+  let head='<thead><tr><th>종류</th>'+ERA_ORDER.map(e=>`<th>${e}</th>`).join('')+'<th>합계</th></tr></thead>';
   let body='<tbody>'+types.map(t=>{const cells=ERA_ORDER.map(e=>gv(t,e));return `<tr><td>${t}</td>`+cells.map(v=>`<td>${fmt(v)}</td>`).join('')+`<td><b>${fmt(cells.reduce((a,b)=>a+b,0))}</b></td></tr>`;}).join('')+'</tbody>';
   document.getElementById('cG3').innerHTML=head+body;
 }
 
-/* ===== 6) ?먯쑀?뺥깭 ===== */
+/* ===== 6) 점유형태 ===== */
 function renderTenure(){
-  if(!TD.length){noData('?먯쑀?뺥깭(?먭?/?꾩썡??');return;}
   const region=mainRegion();
+  const tt=state.tenTab||'type';
+  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;"><span class="seg">
+    <button class="${tt==='type'?'on':''}" onclick="setTenTab('type')">종류별 (5년)</button>
+    <button class="${tt==='yearly'?'on':''}" onclick="setTenTab('yearly')">매년 추이</button></span>
+    <span class="muted" style="margin-left:8px;font-size:11.5px;">${tt==='type'?'인구총조사 5년 · 거처종류별':'주거실태조사 매년 · 시도별'}</span></div>`;
+  if(tt==='yearly'){
+    if(!TYD.length){noData('매년 점유형태(주거실태조사)');return;}
+    const yyears=uniq(TYD.map(d=>d.year)).sort();
+    const yy=state.year===ALL?lastOf(yyears):(yyears.includes(state.year)?state.year:nearestLE(yyears,state.year));
+    const yv=(reg,yr,tn)=>{const r=TYD.find(d=>d.region===reg&&d.year===yr&&d.tenure===tn);return r?r.value:null;};
+    const own=yv(region,yy,'자가'), rent=yv(region,yy,'임차'), free=yv(region,yy,'무상');
+    const a0=yv(region,yyears[0],'자가'), aN=yv(region,lastOf(yyears),'자가');
+    setSub(`${region} · ${yy}년 · 주거실태조사(국토부) 매년 · 자가/임차/무상 점유율(%) · 자료 ${yyears[0]}~${lastOf(yyears)}`);
+    document.getElementById('kpis').innerHTML=kpiHTML([
+      {k:`${region} ${yy}년 자가점유율`,v:`${own!=null?own.toFixed(1):'-'}`,s:'%'},
+      {k:'임차',v:`${rent!=null?rent.toFixed(1):'-'}`,s:'%'},
+      {k:'무상',v:`${free!=null?free.toFixed(1):'-'}`,s:'%'},
+      {k:'자가율 변화',v:`${(a0!=null&&aN!=null)?((aN-a0>=0?'+':'')+(aN-a0).toFixed(1)):'-'}`,s:`%p (${yyears[0]}→${lastOf(yyears)})`}]);
+    setInsight(`${region} ${yy}년 자가점유율 <b>${own!=null?own.toFixed(1):'-'}%</b> · 임차 <b>${rent!=null?rent.toFixed(1):'-'}%</b>. <span class="note">※주거실태조사 표본 · 전세/월세는 '임차'로 합산 · 종류별(아파트 등)은 '종류별(5년)' 탭</span>`);
+    document.getElementById('grid').innerHTML=toolbar+`
+      <div class="panel full"><h3>자가점유율 매년 추이 <span class="muted">(지역 칩으로 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cN5"></canvas></div></div>
+      <div class="panel full"><h3>${region} 점유형태 구성 추이 <span class="muted">(자가/임차/무상 %)</span></h3><div class="chartbox tall"><canvas id="cN6"></canvas></div></div>`;
+    const cols=['#6ba2ff','#46dcb2','#ffc066','#f472b6','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
+    draw('cN5',{type:'line',data:{labels:yyears,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',spanGaps:true,data:yyears.map(yr=>yv(r,yr,'자가'))}))},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    const TO=['자가','임차','무상'], TC={'자가':'#46dcb2','임차':'#6ba2ff','무상':'#9aa7bd'};
+    draw('cN6',{type:'bar',data:{labels:yyears,datasets:TO.map(tn=>({label:tn,backgroundColor:TC[tn],data:yyears.map(yr=>yv(region,yr,tn))}))},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{stacked:true,ticks:{color:'#c3cee0'},grid:{display:false}},y:{stacked:true,max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    return;
+  }
+  if(!TD.length){noData('점유형태(자가/전월세)');return;}
   const y=state.year===ALL?lastOf(TEN_YEARS):nearestLE(TEN_YEARS,state.year);
-  setSub(`${region} 쨌 ${y}??쨌 媛援?湲곗? (?멸뎄珥앹“??5?꾩＜湲?${TEN_YEARS.join('쨌')})${state.year===ALL?' 쨌 ?꾩껜?믪턀??:(y!==state.year?` 쨌 ?좏깮 ${state.year}??{y}`:'')}`);
+  setSub(`${region} · ${y}년 · 가구 기준 (인구총조사 5년주기 ${TEN_YEARS.join('·')})${state.year===ALL?' · 전체→최신':(y!==state.year?` · 선택 ${state.year}→${y}`:'')}`);
   const htypes=orderBy(uniq(TD.map(d=>d.htype)),TYPE_ORDER);
   const tv=(h,t)=>{const r=TD.find(d=>d.region===region&&d.htype===h&&d.year===y&&d.tenure===t);return r?r.value:null;};
-  const totalHH=htypes.reduce((s,h)=>s+(tv(h,'?⑷퀎')||0),0);
-  const ownHH=htypes.reduce((s,h)=>s+(tv(h,'?먭?')||0),0);
+  const totalHH=htypes.reduce((s,h)=>s+(tv(h,'합계')||0),0);
+  const ownHH=htypes.reduce((s,h)=>s+(tv(h,'자가')||0),0);
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${y}???쇰컲媛援?,v:fmt(totalHH),s:'媛援?},
-    {k:'?먭? ?먯쑀??,v:`${totalHH?(ownHH/totalHH*100).toFixed(1):0}`,s:'%'},
-    {k:'?먭? 媛援?,v:fmt(ownHH),s:'媛援?},
-    {k:'?꾩감 ??,v:fmt(totalHH-ownHH),s:`${totalHH?((totalHH-ownHH)/totalHH*100).toFixed(1):0}%`}]);
-  const aRate=(h)=>{const t=tv(h,'?⑷퀎'),o=tv(h,'?먭?');return t?o/t*100:0;};
-  setInsight(`${region} ${y}???먭? ?먯쑀?⑥? ?꾪뙆??<b>${aRate('?꾪뙆??).toFixed(1)}%</b>, ?⑤룆二쇳깮 <b>${aRate('?⑤룆二쇳깮').toFixed(1)}%</b> ?낅땲?? (鍮덉쭛 ?쒖쇅, 嫄곗＜媛援?湲곗?)`);
-  document.getElementById('grid').innerHTML=`
-    <div class="panel"><h3>醫낅쪟蹂??먭? ?먯쑀??/h3><div class="chartbox"><canvas id="cN1"></canvas></div></div>
-    <div class="panel"><h3>?먯쑀?뺥깭 援ъ꽦 <span class="muted">(100%)</span></h3><div class="chartbox"><canvas id="cN2"></canvas></div></div>
-    <div class="panel full"><h3>?먭???異붿씠 <span class="muted">(${TEN_YEARS.join('쨌')})</span></h3><div class="chartbox"><canvas id="cN3"></canvas></div></div>
-    <div class="panel full"><h3>?곸꽭??<span class="muted">(媛援ъ닔)</span></h3><div class="tablewrap"><table id="cN4"></table></div></div>`;
+    {k:`${region} ${y}년 일반가구`,v:fmt(totalHH),s:'가구'},
+    {k:'자가 점유율',v:`${totalHH?(ownHH/totalHH*100).toFixed(1):0}`,s:'%'},
+    {k:'자가 가구',v:fmt(ownHH),s:'가구'},
+    {k:'임차 등',v:fmt(totalHH-ownHH),s:`${totalHH?((totalHH-ownHH)/totalHH*100).toFixed(1):0}%`}]);
+  const aRate=(h)=>{const t=tv(h,'합계'),o=tv(h,'자가');return t?o/t*100:0;};
+  setInsight(`${region} ${y}년 자가 점유율은 아파트 <b>${aRate('아파트').toFixed(1)}%</b>, 단독주택 <b>${aRate('단독주택').toFixed(1)}%</b> 입니다. (빈집 제외, 거주가구 기준)`);
+  document.getElementById('grid').innerHTML=toolbar+`
+    <div class="panel"><h3>종류별 자가 점유율</h3><div class="chartbox"><canvas id="cN1"></canvas></div></div>
+    <div class="panel"><h3>점유형태 구성 <span class="muted">(100%)</span></h3><div class="chartbox"><canvas id="cN2"></canvas></div></div>
+    <div class="panel full"><h3>자가율 추이 <span class="muted">(${TEN_YEARS.join('·')})</span></h3><div class="chartbox"><canvas id="cN3"></canvas></div></div>
+    <div class="panel full"><h3>상세표 <span class="muted">(가구수)</span></h3><div class="tablewrap"><table id="cN4"></table></div></div>`;
   draw('cN1',{type:'bar',data:{labels:htypes,datasets:[{data:htypes.map(h=>+aRate(h).toFixed(1)),backgroundColor:htypes.map(h=>TYPE_COLORS[h])}]},
-    options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ?먭???${c.parsed.y}%`}}},
+    options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 자가율 ${c.parsed.y}%`}}},
       scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
   draw('cN2',{type:'bar',data:{labels:htypes,datasets:TEN_ORDER.map(tn=>({label:tn,backgroundColor:TEN_COLORS[tn],
-      data:htypes.map(h=>{const t=tv(h,'?⑷퀎'),v=tv(h,tn);return t?+(100*(v||0)/t).toFixed(1):0;})}))},
+      data:htypes.map(h=>{const t=tv(h,'합계'),v=tv(h,tn);return t?+(100*(v||0)/t).toFixed(1):0;})}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
       scales:{x:{stacked:true,ticks:{color:'#c3cee0'},grid:{display:false}},y:{stacked:true,max:100,ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
   draw('cN3',{type:'line',data:{labels:TEN_YEARS,datasets:htypes.map(h=>({label:h,borderColor:TYPE_COLORS[h],backgroundColor:'transparent',tension:0,
-      data:TEN_YEARS.map(yy=>{const r=TD.find(d=>d.region===region&&d.htype===h&&d.year===yy&&d.tenure==='?⑷퀎');const o=TD.find(d=>d.region===region&&d.htype===h&&d.year===yy&&d.tenure==='?먭?');return (r&&r.value)?+(o.value/r.value*100).toFixed(1):null;})}))},
+      data:TEN_YEARS.map(yy=>{const r=TD.find(d=>d.region===region&&d.htype===h&&d.year===yy&&d.tenure==='합계');const o=TD.find(d=>d.region===region&&d.htype===h&&d.year===yy&&d.tenure==='자가');return (r&&r.value)?+(o.value/r.value*100).toFixed(1):null;})}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},
       scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
-  const cols=['?⑷퀎',...TEN_ORDER];
-  let head='<thead><tr><th>醫낅쪟</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>?먭???/th></tr></thead>';
-  let body='<tbody>'+htypes.map(h=>{const cells=cols.map(c=>tv(h,c));const t=tv(h,'?⑷퀎'),o=tv(h,'?먭?');
+  const cols=['합계',...TEN_ORDER];
+  let head='<thead><tr><th>종류</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>자가율</th></tr></thead>';
+  let body='<tbody>'+htypes.map(h=>{const cells=cols.map(c=>tv(h,c));const t=tv(h,'합계'),o=tv(h,'자가');
     return `<tr><td>${h}</td>`+cells.map(v=>`<td>${fmt(v)}</td>`).join('')+`<td><b>${t?(o/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
   document.getElementById('cN4').innerHTML=head+body;
 }
 
-/* ===== 7) 怨듦툒 (?명뿀媛쨌李⑷났쨌以怨? ===== */
-const MEAS=['?명뿀媛','李⑷났','以怨?];
-const MEAS_C={'?명뿀媛':'#ffc066','李⑷났':'#6ba2ff','以怨?:'#46dcb2'};
+/* ===== 7) 공급 (인허가·착공·준공) ===== */
+const MEAS=['인허가','착공','준공'];
+const MEAS_C={'인허가':'#ffc066','착공':'#6ba2ff','준공':'#46dcb2'};
 let _sAnn=null,_sMon=null;
 function supAnnual(){if(_sAnn)return _sAnn;_sAnn=new Map();for(const d of SD){const k=d.measure+'|'+d.region+'|'+d.type+'|'+(d.ym||'').slice(0,4);_sAnn.set(k,(_sAnn.get(k)||0)+(d.value||0));}return _sAnn;}
 function supMonth(){if(_sMon)return _sMon;_sMon=new Map();for(const d of SD)_sMon.set(d.measure+'|'+d.region+'|'+d.type+'|'+d.ym,d.value);return _sMon;}
 function renderSupply(){
-  if(!SD.length){noData('怨듦툒(?명뿀媛쨌李⑷났쨌以怨?');return;}
+  if(!SD.length){noData('공급(인허가·착공·준공)');return;}
   const region=mainRegion();
   const isAll=state.year===ALL;
   const SUP_YEARS=[];for(let y=2011;y<=2025;y++)SUP_YEARS.push(String(y));
   const yFull=isAll?null:String(Math.min(2025,Math.max(2011,+state.year)));
-  const yLabel=isAll?'2011~2025 ?꾧퀎':`${yFull}??;
-  setSub(`${region} 쨌 援?넗遺 二쇳깮嫄댁꽕?ㅼ쟻 쨌 ?붾퀎 2011.01~2026.03 쨌 ?고빀怨?${yLabel}`);
+  const yLabel=isAll?'2011~2025 누계':`${yFull}년`;
+  setSub(`${region} · 국토부 주택건설실적 · 월별 2011.01~2026.03 · 연합계 ${yLabel}`);
   const months=[...new Set(SD.map(d=>d.ym))].sort();
   const AN=supAnnual(), MO=supMonth();
-  const sv=(m,yr,typ)=>AN.get(`${m}|${region}|${typ||'?꾩껜'}|${yr}`)||0;
+  const sv=(m,yr,typ)=>AN.get(`${m}|${region}|${typ||'전체'}|${yr}`)||0;
   const agg=(m,typ)=>isAll?SUP_YEARS.reduce((s,y)=>s+sv(m,y,typ),0):sv(m,yFull,typ);
-  const mv=(m,ym)=>{const v=MO.get(`${m}|${region}|?꾩껜|${ym}`);return v==null?null:v;};
-  const ph=agg('?명뿀媛'),pc=agg('李⑷났'),pj=agg('以怨?);
+  const mv=(m,ym)=>{const v=MO.get(`${m}|${region}|전체|${ym}`);return v==null?null:v;};
+  const ph=agg('인허가'),pc=agg('착공'),pj=agg('준공');
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${yLabel} ?명뿀媛`,v:fmt(ph),s:'??},
-    {k:'李⑷났',v:fmt(pc),s:'??},
-    {k:'以怨?,v:fmt(pj),s:'??},
-    {k:'李⑷났/?명뿀媛',v:ph?`${(pc/ph*100).toFixed(0)}%`:'-',s:''}]);
-  setInsight(`${region} ${yLabel} ???명뿀媛 <b>${fmt(ph)}</b> 쨌 李⑷났 <b>${fmt(pc)}</b> 쨌 以怨?<b>${fmt(pj)}</b>?? <span class="note">?살씤?덇????붾퀎?꾧퀎瑜???利앸텇?쇰줈 ?섏궛 쨌 ?⑥쐞????媛援?</span>`);
+    {k:`${region} ${yLabel} 인허가`,v:fmt(ph),s:'호'},
+    {k:'착공',v:fmt(pc),s:'호'},
+    {k:'준공',v:fmt(pj),s:'호'},
+    {k:'착공/인허가',v:ph?`${(pc/ph*100).toFixed(0)}%`:'-',s:''}]);
+  setInsight(`${region} ${yLabel} — 인허가 <b>${fmt(ph)}</b> · 착공 <b>${fmt(pc)}</b> · 준공 <b>${fmt(pj)}</b>호. <span class="note">※인허가는 월별누계를 월 증분으로 환산 · 단위는 호(가구)</span>`);
   const isMonth=state.supMode==='month';
   const meas=state.supMeasure;
   const tab=state.supTab||'trend';
-  const aggReg=(m,reg)=>isAll?SUP_YEARS.reduce((s,y)=>s+(AN.get(`${m}|${reg}|?꾩껜|${y}`)||0),0):(AN.get(`${m}|${reg}|?꾩껜|${yFull}`)||0);
+  const aggReg=(m,reg)=>isAll?SUP_YEARS.reduce((s,y)=>s+(AN.get(`${m}|${reg}|전체|${y}`)||0),0):(AN.get(`${m}|${reg}|전체|${yFull}`)||0);
   const subbar=`<div style="grid-column:1/-1;margin:-2px 0 6px;"><span class="seg">
-      <button class="${tab==='trend'?'on':''}" onclick="setSupTab('trend')">異붿꽭</button>
-      <button class="${tab==='region'?'on':''}" onclick="setSupTab('region')">?쒕룄蹂?/button>
-      <button class="${tab==='type'?'on':''}" onclick="setSupTab('type')">?좏삎쨌??/button></span></div>`;
+      <button class="${tab==='trend'?'on':''}" onclick="setSupTab('trend')">추세</button>
+      <button class="${tab==='region'?'on':''}" onclick="setSupTab('region')">시도별</button>
+      <button class="${tab==='type'?'on':''}" onclick="setSupTab('type')">유형·표</button></span></div>`;
   let panels='';
   if(tab==='trend'){
-    panels=`<div class="panel full"><h3>怨듦툒 異붿씠 <span class="muted">(${region})</span>
+    panels=`<div class="panel full"><h3>공급 추이 <span class="muted">(${region})</span>
       <span class="seg" style="margin-left:8px;">
-        <button class="${isMonth?'':'on'}" onclick="setSupMode('year')">?곕룄蹂?/button>
-        <button class="${isMonth?'on':''}" onclick="setSupMode('month')">?붾퀎</button></span></h3>
+        <button class="${isMonth?'':'on'}" onclick="setSupMode('year')">연도별</button>
+        <button class="${isMonth?'on':''}" onclick="setSupMode('month')">월별</button></span></h3>
       <div class="chartbox tall"><canvas id="cS1"></canvas></div></div>`;
   }else if(tab==='region'){
     const rv=state.supRegView;
     const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
-      <span class="seg"><button class="${rv==='overlay'?'on':''}" onclick="setSupRegView('overlay')">寃뱀퀜蹂닿린</button><button class="${rv==='multi'?'on':''}" onclick="setSupRegView('multi')">媛쒕퀎</button></span>${rv==='overlay'?`
-      <span class="seg" style="margin-left:8px;"><button class="${meas==='?명뿀媛'?'on':''}" onclick="setSupMeasure('?명뿀媛')">?명뿀媛</button><button class="${meas==='李⑷났'?'on':''}" onclick="setSupMeasure('李⑷났')">李⑷났</button><button class="${meas==='以怨??'on':''}" onclick="setSupMeasure('以怨?)">以怨?/button></span>`:''}</div>`;
+      <span class="seg"><button class="${rv==='overlay'?'on':''}" onclick="setSupRegView('overlay')">겹쳐보기</button><button class="${rv==='multi'?'on':''}" onclick="setSupRegView('multi')">개별</button></span>${rv==='overlay'?`
+      <span class="seg" style="margin-left:8px;"><button class="${meas==='인허가'?'on':''}" onclick="setSupMeasure('인허가')">인허가</button><button class="${meas==='착공'?'on':''}" onclick="setSupMeasure('착공')">착공</button><button class="${meas==='준공'?'on':''}" onclick="setSupMeasure('준공')">준공</button></span>`:''}</div>`;
     if(rv==='overlay'){
-      panels=toolbar+`<div class="panel full"><h3>?쒕룄蹂?${meas} 異붿씠 <span class="muted">(?곕룄蹂?쨌 吏??移⑹쑝濡??щ윭 ?쒕룄 寃뱀퀜 鍮꾧탳)</span></h3><div class="chartbox tall"><canvas id="cS5"></canvas></div></div>`;
+      panels=toolbar+`<div class="panel full"><h3>시도별 ${meas} 추이 <span class="muted">(연도별 · 지역 칩으로 여러 시도 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cS5"></canvas></div></div>`;
     }else{
-      const sidos=ALL_REGIONS.filter(r=>r!=='?꾧뎅');
-      panels=toolbar+`<div style="grid-column:1/-1;margin-bottom:4px;" class="muted">?곕룄蹂??명뿀媛쨌李⑷났쨌以怨?쨌 <span style="color:#ffc066">?륁씤?덇?</span> <span style="color:#6ba2ff">?륁갑怨?/span> <span style="color:#46dcb2">?륁?怨?/span> 쨌 ???좏깮 吏??/div>`
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
+      panels=toolbar+`<div style="grid-column:1/-1;margin-bottom:4px;" class="muted">연도별 인허가·착공·준공 · <span style="color:#ffc066">●인허가</span> <span style="color:#6ba2ff">●착공</span> <span style="color:#46dcb2">●준공</span> · ★=선택 지역</div>`
         +`<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">`
         +sidos.map((r,i)=>{const sel=state.regions.includes(r);
-          return `<div class="panel" style="padding:12px 14px;${sel?'border-color:#ffc066;':''}"><h3 style="font-size:14px;margin-bottom:8px;">${r.replace(/?밸퀎??愿묒뿭???밸퀎?먯튂???밸퀎?먯튂????/,'')}${sel?' ??:''}</h3><div style="position:relative;height:185px;"><canvas id="cSR${i}"></canvas></div></div>`;}).join('')
+          return `<div class="panel" style="padding:12px 14px;${sel?'border-color:#ffc066;':''}"><h3 style="font-size:14px;margin-bottom:8px;">${r.replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')}${sel?' ★':''}</h3><div style="position:relative;height:185px;"><canvas id="cSR${i}"></canvas></div></div>`;}).join('')
         +`</div>`;
     }
   }else{
-    panels=`<div class="panel"><h3>${yLabel} ?좏삎蹂?李⑷났 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cS3"></canvas></div></div>
-      <div class="panel"><h3>?곕룄蹂??⑷퀎 (??</h3><div class="tablewrap"><table id="cS4"></table></div></div>`;
+    panels=`<div class="panel"><h3>${yLabel} 유형별 착공 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cS3"></canvas></div></div>
+      <div class="panel"><h3>연도별 합계 (호)</h3><div class="tablewrap"><table id="cS4"></table></div></div>`;
   }
   document.getElementById('grid').innerHTML=subbar+panels;
   if(tab==='trend'){
     if(isMonth){
       draw('cS1',{type:'line',data:{labels:months,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',pointRadius:0,borderWidth:1.4,tension:0,spanGaps:true,data:months.map(ym=>mv(m,ym))}))},
-        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
+        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
           scales:{x:{ticks:{color:'#c3cee0',maxTicksLimit:16},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
     }else{
       draw('cS1',{type:'bar',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,backgroundColor:MEAS_C[m],data:SUP_YEARS.map(y=>sv(m,y))}))},
-        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
+        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
           scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
     }
   }else if(tab==='region'){
     if(state.supRegView==='overlay'){
       const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
-      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>AN.get(`${meas}|${r}|?꾩껜|${y}`)||0)}))},
-        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
+      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>AN.get(`${meas}|${r}|전체|${y}`)||0)}))},
+        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
           scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
     }else{
-      const sidos=ALL_REGIONS.filter(r=>r!=='?꾧뎅');
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
       sidos.forEach((r,i)=>{
-        draw('cSR'+i,{type:'line',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:1.5,data:SUP_YEARS.map(y=>AN.get(`${m}|${r}|?꾩껜|${y}`)||0)}))},
-          options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>items[0].label,label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}??}}},
+        draw('cSR'+i,{type:'line',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:1.5,data:SUP_YEARS.map(y=>AN.get(`${m}|${r}|전체|${y}`)||0)}))},
+          options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>items[0].label,label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
             scales:{x:{ticks:{color:'#c3cee0',maxTicksLimit:6,font:{size:10}},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v),font:{size:10},maxTicksLimit:5},grid:{color:'#28324a'}}}})});
       });
     }
   }else{
-    const TYS=['?⑤룆','?ㅼ꽭?','?곕┰','?꾪뙆??],TYC=['#46dcb2','#f48fb1','#ffc066','#6ba2ff'];
-    draw('cS3',{type:'bar',data:{labels:TYS,datasets:[{data:TYS.map(t=>agg('李⑷났',t)),backgroundColor:TYC}]},
-      options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)}??}}},
+    const TYS=['단독','다세대','연립','아파트'],TYC=['#46dcb2','#f48fb1','#ffc066','#6ba2ff'];
+    draw('cS3',{type:'bar',data:{labels:TYS,datasets:[{data:TYS.map(t=>agg('착공',t)),backgroundColor:TYC}]},
+      options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)}호`}}},
         scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
-    let head='<thead><tr><th>?곕룄</th>'+MEAS.map(m=>`<th>${m}</th>`).join('')+'</tr></thead>';
+    let head='<thead><tr><th>연도</th>'+MEAS.map(m=>`<th>${m}</th>`).join('')+'</tr></thead>';
     let body='<tbody>'+SUP_YEARS.slice().reverse().map(y=>`<tr><td>${y}</td>`+MEAS.map(m=>`<td>${fmt(sv(m,y))}</td>`).join('')+'</tr>').join('')+'</tbody>';
     document.getElementById('cS4').innerHTML=head+body;
   }
 }
 
-/* ===== 8) 二쇳깮?뚯쑀 (?ㅼ＜?앹옄) ===== */
+/* ===== 8) 주택소유 (다주택자) ===== */
 function renderOwn(){
-  if(!OWND.length){noData('二쇳깮?뚯쑀(?ㅼ＜?앹옄)');return;}
+  if(!OWND.length){noData('주택소유(다주택자)');return;}
   const tab=state.ownTab||'compose', apt=tab==='apt', conc=tab==='conc', indiv=apt||conc;
-  const basis=indiv?'媛쒖씤':state.ownBasis, region=apt?'?꾧뎅':mainRegion(), unit=basis==='媛쒖씤'?'紐?:'媛援?;
+  const basis=indiv?'개인':state.ownBasis, region=apt?'전국':mainRegion(), unit=basis==='개인'?'명':'가구';
   const years=uniq(OWND.filter(d=>d.basis===basis).map(d=>d.year)).sort();
   const y=state.year===ALL?lastOf(years):(years.includes(state.year)?state.year:nearestLE(years,state.year));
-  const ORD=basis==='媛쒖씤'?['1梨?,'2梨?,'3梨??댁긽']:['1梨?,'2梨?,'3梨?,'4梨?,'5梨꾩씠??];
+  const ORD=basis==='개인'?['1채','2채','3채 이상']:['1채','2채','3채','4채','5채이상'];
   const ov=(bs,reg,yy,b)=>{const r=OWND.find(d=>d.basis===bs&&d.region===reg&&d.year===yy&&d.band===b);return r?(r.value||0):0;};
-  const rate=(bs,reg,yy)=>{const t=ov(bs,reg,yy,'珥앷퀎');return t?+((t-ov(bs,reg,yy,'1梨?))/t*100).toFixed(1):null;};
-  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
-    <span class="seg"><button class="${state.ownBasis==='媛쒖씤'?'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('媛쒖씤')">媛쒖씤</button><button class="${state.ownBasis==='媛援??'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('媛援?)">媛援?/button></span>${indiv?'<span class="muted" style="margin-left:6px;font-size:11.5px;">쨌 ????? 媛쒖씤 怨좎젙</span>':''}
-    <span class="seg" style="margin-left:8px;"><button class="${tab==='compose'?'on':''}" onclick="setOwnTab('compose')">援ъ꽦쨌異붿씠</button><button class="${tab==='region'?'on':''}" onclick="setOwnTab('region')">?쒕룄蹂?/button><button class="${tab==='conc'?'on':''}" onclick="setOwnTab('conc')">?뱤 吏묒쨷??/button><button class="${tab==='apt'?'on':''}" onclick="setOwnTab('apt')">?룫 ?꾪뙆??/button><button class="${tab==='table'?'on':''}" onclick="setOwnTab('table')">??/button></span></div>`;
+  const rate=(bs,reg,yy)=>{const t=ov(bs,reg,yy,'총계');return t?+((t-ov(bs,reg,yy,'1채'))/t*100).toFixed(1):null;};
+  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+    <span class="seg"><button class="${state.ownBasis==='개인'?'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('개인')">개인</button><button class="${state.ownBasis==='가구'?'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('가구')">가구</button></span>
+    <span class="seg"><button class="${tab==='compose'?'on':''}" onclick="setOwnTab('compose')">구성·추이</button><button class="${tab==='region'?'on':''}" onclick="setOwnTab('region')">시도별</button><button class="${tab==='conc'?'on':''}" onclick="setOwnTab('conc')">📊 집중도</button><button class="${tab==='apt'?'on':''}" onclick="setOwnTab('apt')">🏢 아파트</button><button class="${tab==='table'?'on':''}" onclick="setOwnTab('table')">표</button></span>${indiv?'<span class="muted" style="font-size:11.5px;">· 이 탭은 개인 고정</span>':''}</div>`;
 
   if(conc){
-    if(!CONC.length){noData('?뚯쑀 吏묒쨷??);return;}
+    if(!CONC.length){noData('소유 집중도');return;}
     const cyears=uniq(CONC.map(d=>d.year)).sort();
     const yc=state.year===ALL?lastOf(cyears):(cyears.includes(state.year)?state.year:nearestLE(cyears,state.year));
     const cv=(reg,yy,m)=>{const r=CONC.find(d=>d.region===reg&&d.year===yy&&d.metric===m);return r?(r.value||0):0;};
-    const ownerR=(reg,yy)=>{const t=ov('媛쒖씤',reg,yy,'珥앷퀎');return t?+((t-ov('媛쒖씤',reg,yy,'1梨?))/t*100).toFixed(1):null;};
-    const homeR=(reg,yy)=>{const h=cv(reg,yy,'媛쒖씤?뚯쑀二쇳깮');return h?+((h-ov('媛쒖씤',reg,yy,'1梨?))/h*100).toFixed(1):null;};
-    const orate=ownerR(region,yc), hrate=homeR(region,yc), avg=cv(region,yc,'?됯퇏'), homes=cv(region,yc,'媛쒖씤?뚯쑀二쇳깮');
-    const multiHomes=homes-ov('媛쒖씤',region,yc,'1梨?);
-    setSub(`${region} 쨌 ${yc}??쨌 媛쒖씤쨌嫄곗＜吏??湲곗? 쨌 ?뚯쑀 吏묒쨷??(?먮즺 ${cyears[0]}~${cyears[cyears.length-1]})`);
+    const ownerR=(reg,yy)=>{const t=ov('개인',reg,yy,'총계');return t?+((t-ov('개인',reg,yy,'1채'))/t*100).toFixed(1):null;};
+    const homeR=(reg,yy)=>{const h=cv(reg,yy,'개인소유주택');return h?+((h-ov('개인',reg,yy,'1채'))/h*100).toFixed(1):null;};
+    const orate=ownerR(region,yc), hrate=homeR(region,yc), avg=cv(region,yc,'평균'), homes=cv(region,yc,'개인소유주택');
+    const multiHomes=homes-ov('개인',region,yc,'1채');
+    setSub(`${region} · ${yc}년 · 개인·거주지역 기준 · 소유 집중도 (자료 ${cyears[0]}~${cyears[cyears.length-1]})`);
     document.getElementById('kpis').innerHTML=kpiHTML([
-      {k:'?ㅼ＜?앹옄 蹂댁쑀 二쇳깮??,v:fmt(multiHomes),s:`??(${hrate}%)`},
-      {k:'?ㅼ＜???뚯쑀??鍮꾩쑉',v:`${orate}`,s:'% (?щ엺)'},
-      {k:'1?몃떦 ?됯퇏 ?뚯쑀二쇳깮',v:avg.toFixed(2),s:'梨?},
-      {k:`${region} 媛쒖씤?뚯쑀二쇳깮`,v:fmt(homes),s:'??}]);
-    setInsight(`${region} ${yc}???ㅼ＜?앹옄???뚯쑀?먯쓽 <b>${orate}%</b>吏留?媛쒖씤?뚯쑀二쇳깮??<b>${hrate}%</b>瑜?蹂댁쑀?⑸땲?? 二쇳깮 ?먯쑀?⑥씠 ?щ엺 鍮꾩쑉蹂대떎 ?믪쓣?섎줉 ?뚯쑀媛 吏묒쨷??寃껋엯?덈떎. <span class="note">?산컻?맞룰굅二쇱???湲곗? (怨듬룞?뚯쑀濡??쎄컙???ㅼ감 媛??</span>`);
+      {k:'다주택자 보유 주택수',v:fmt(multiHomes),s:`호 (${hrate}%)`},
+      {k:'다주택 소유자 비율',v:`${orate}`,s:'% (사람)'},
+      {k:'1인당 평균 소유주택',v:avg.toFixed(2),s:'채'},
+      {k:`${region} 개인소유주택`,v:fmt(homes),s:'호'}]);
+    setInsight(`${region} ${yc}년 다주택자는 소유자의 <b>${orate}%</b>지만 개인소유주택의 <b>${hrate}%</b>를 보유합니다. 주택 점유율이 사람 비율보다 높을수록 소유가 집중된 것입니다. <span class="note">※개인·거주지역 기준 (공동소유로 약간의 오차 가능)</span>`);
     document.getElementById('grid').innerHTML=toolbar+`
-      <div class="panel full"><h3>?ㅼ＜??鍮꾩쑉 ???뚯쑀??vs 二쇳깮 <span class="muted">(${region}, ${cyears[0]}~${cyears[cyears.length-1]})</span></h3><div class="chartbox tall"><canvas id="cO8"></canvas></div></div>
-      <div class="panel full"><h3>1?몃떦 ?됯퇏 ?뚯쑀 二쇳깮??異붿씠 <span class="muted">(吏??移⑹쑝濡?寃뱀퀜 鍮꾧탳)</span></h3><div class="chartbox tall"><canvas id="cO9"></canvas></div></div>`;
+      <div class="panel full"><h3>다주택 비율 — 소유자 vs 주택 <span class="muted">(${region}, ${cyears[0]}~${cyears[cyears.length-1]})</span></h3><div class="chartbox tall"><canvas id="cO8"></canvas></div></div>
+      <div class="panel full"><h3>1인당 평균 소유 주택수 추이 <span class="muted">(지역 칩으로 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cO9"></canvas></div></div>`;
     draw('cO8',{type:'line',data:{labels:cyears,datasets:[
-      {label:'?뚯쑀??湲곗?',borderColor:'#6ba2ff',backgroundColor:'transparent',data:cyears.map(yy=>ownerR(region,yy))},
-      {label:'蹂댁쑀 二쇳깮 湲곗?',borderColor:'#ffc066',backgroundColor:'transparent',data:cyears.map(yy=>homeR(region,yy))}]},
+      {label:'소유자 기준',borderColor:'#6ba2ff',backgroundColor:'transparent',data:cyears.map(yy=>ownerR(region,yy))},
+      {label:'보유 주택 기준',borderColor:'#ffc066',backgroundColor:'transparent',data:cyears.map(yy=>homeR(region,yy))}]},
       options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
     const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
-    draw('cO9',{type:'line',data:{labels:cyears,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',data:cyears.map(yy=>cv(r,yy,'?됯퇏')||null)}))},
-      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}梨?}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'梨?},grid:{color:'#28324a'}}}})});
+    draw('cO9',{type:'line',data:{labels:cyears,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',data:cyears.map(yy=>cv(r,yy,'평균')||null)}))},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}채`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'채'},grid:{color:'#28324a'}}}})});
     return;
   }
 
-  if(apt){   // ?꾧뎅쨌媛쒖씤 ???꾩껜 二쇳깮 vs ?꾪뙆??    const tA=ov('媛쒖씤','?꾧뎅',y,'珥앷퀎'), mA=tA-ov('媛쒖씤','?꾧뎅',y,'1梨?);
-    const tP=ov('?꾪뙆??,'?꾧뎅',y,'珥앷퀎'), mP=tP-ov('?꾪뙆??,'?꾧뎅',y,'1梨?);
-    setSub(`?꾧뎅 쨌 ${y}??쨌 媛쒖씤쨌?뚯쑀??湲곗? 쨌 ?꾩껜 二쇳깮 vs ?꾪뙆???ㅼ＜??鍮꾩쑉 (吏??援щ텇 ?녿뒗 ?꾧뎅 ?듦퀎)`);
+  if(apt){   // 전국·개인 — 전체 주택 vs 아파트
+    const tA=ov('개인','전국',y,'총계'), mA=tA-ov('개인','전국',y,'1채');
+    const tP=ov('아파트','전국',y,'총계'), mP=tP-ov('아파트','전국',y,'1채');
+    setSub(`전국 · ${y}년 · 개인·소유자 기준 · 전체 주택 vs 아파트 다주택 비율 (지역 구분 없는 전국 통계)`);
     document.getElementById('kpis').innerHTML=kpiHTML([
-      {k:`?꾧뎅 ${y}???ㅼ＜???꾩껜)`,v:fmt(mA),s:`${tA?(mA/tA*100).toFixed(1):0}%`},
-      {k:'?ㅼ＜???꾪뙆??2梨?)',v:fmt(mP),s:`${tP?(mP/tP*100).toFixed(1):0}%`},
-      {k:'?꾪뙆???뚯쑀??,v:fmt(tP),s:'紐?},
-      {k:'?꾪뙆???ㅼ＜??鍮꾩쨷',v:mA?`${(mP/mA*100).toFixed(0)}%`:'-',s:'?꾩껜 ?ㅼ＜??以?}]);
-    setInsight(`?꾧뎅 ${y}???ㅼ＜?앸쪧? ?꾩껜 <b>${tA?(mA/tA*100).toFixed(1):0}%</b> vs ?꾪뙆?몃쭔 <b>${tP?(mP/tP*100).toFixed(1):0}%</b>. ?꾪뙆??履쎌씠 ??븘, ?ㅼ＜?앹쓽 ?곷떦?섎뒗 <b>?⑤룆쨌?ㅼ꽭? ??鍮꾩븘?뚰듃</b>瑜??쇨퀬 ?덉뒿?덈떎. <span class="note">?살쟾援?룰컻??湲곗? (?꾪뙆?몃뒗 吏??퀎 ?먮즺 ?놁쓬)</span>`);
+      {k:`전국 ${y}년 다주택(전체)`,v:fmt(mA),s:`${tA?(mA/tA*100).toFixed(1):0}%`},
+      {k:'다주택(아파트 2채+)',v:fmt(mP),s:`${tP?(mP/tP*100).toFixed(1):0}%`},
+      {k:'아파트 소유자',v:fmt(tP),s:'명'},
+      {k:'아파트 다주택 비중',v:mA?`${(mP/mA*100).toFixed(0)}%`:'-',s:'전체 다주택 중'}]);
+    setInsight(`전국 ${y}년 다주택률은 전체 <b>${tA?(mA/tA*100).toFixed(1):0}%</b> vs 아파트만 <b>${tP?(mP/tP*100).toFixed(1):0}%</b>. 아파트 쪽이 낮아, 다주택의 상당수는 <b>단독·다세대 등 비아파트</b>를 끼고 있습니다. <span class="note">※전국·개인 기준 (아파트는 지역별 자료 없음)</span>`);
     document.getElementById('grid').innerHTML=toolbar+`
-      <div class="panel full"><h3>?ㅼ＜?앸쪧 異붿씠 ???꾩껜 vs ?꾪뙆??<span class="muted">(?꾧뎅쨌媛쒖씤)</span></h3><div class="chartbox tall"><canvas id="cO5"></canvas></div></div>
-      <div class="panel full"><h3>?뚯쑀 嫄댁닔 援ъ꽦 鍮꾧탳 <span class="muted">(${y}??쨌 %)</span></h3><div class="chartbox"><canvas id="cO6"></canvas></div></div>`;
+      <div class="panel full"><h3>다주택률 추이 — 전체 vs 아파트 <span class="muted">(전국·개인)</span></h3><div class="chartbox tall"><canvas id="cO5"></canvas></div></div>
+      <div class="panel full"><h3>소유 건수 구성 비교 <span class="muted">(${y}년 · %)</span></h3><div class="chartbox"><canvas id="cO6"></canvas></div></div>`;
     draw('cO5',{type:'line',data:{labels:years,datasets:[
-      {label:'?꾩껜 二쇳깮',borderColor:'#6ba2ff',backgroundColor:'transparent',data:years.map(yy=>rate('媛쒖씤','?꾧뎅',yy))},
-      {label:'?꾪뙆??,borderColor:'#46dcb2',backgroundColor:'transparent',data:years.map(yy=>rate('?꾪뙆??,'?꾧뎅',yy))}]},
+      {label:'전체 주택',borderColor:'#6ba2ff',backgroundColor:'transparent',data:years.map(yy=>rate('개인','전국',yy))},
+      {label:'아파트',borderColor:'#46dcb2',backgroundColor:'transparent',data:years.map(yy=>rate('아파트','전국',yy))}]},
       options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
-    const BB=['1梨?,'2梨?,'3梨??댁긽'];
+    const BB=['1채','2채','3채 이상'];
     draw('cO6',{type:'bar',data:{labels:BB,datasets:[
-      {label:'?꾩껜 二쇳깮',backgroundColor:'#6ba2ff',data:BB.map(b=>tA?+(ov('媛쒖씤','?꾧뎅',y,b)/tA*100).toFixed(1):0)},
-      {label:'?꾪뙆??,backgroundColor:'#46dcb2',data:BB.map(b=>tP?+(ov('?꾪뙆??,'?꾧뎅',y,b)/tP*100).toFixed(1):0)}]},
+      {label:'전체 주택',backgroundColor:'#6ba2ff',data:BB.map(b=>tA?+(ov('개인','전국',y,b)/tA*100).toFixed(1):0)},
+      {label:'아파트',backgroundColor:'#46dcb2',data:BB.map(b=>tP?+(ov('아파트','전국',y,b)/tP*100).toFixed(1):0)}]},
       options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
     return;
   }
 
-  const total=ov(basis,region,y,'珥앷퀎')||ORD.reduce((s,b)=>s+ov(basis,region,y,b),0);
-  const one=ov(basis,region,y,'1梨?), multi=total-one, r2=total?multi/total*100:0;
-  setSub(`${region} 쨌 ${y}??쨌 ${basis} 湲곗?${state.year===ALL?' (?꾩껜?믪턀??':''} 쨌 ?ㅼ＜??鍮꾩쑉 = 2梨??댁긽 ?뚯쑀 ${basis} 鍮꾩쑉(?щ엺 ??湲곗?)`);
+  const total=ov(basis,region,y,'총계')||ORD.reduce((s,b)=>s+ov(basis,region,y,b),0);
+  const one=ov(basis,region,y,'1채'), multi=total-one, r2=total?multi/total*100:0;
+  setSub(`${region} · ${y}년 · ${basis} 기준${state.year===ALL?' (전체→최신)':''} · 다주택 비율 = 2채 이상 소유 ${basis} 비율(사람 수 기준)`);
   document.getElementById('kpis').innerHTML=kpiHTML([
-    {k:`${region} ${y}???뚯쑀 ${basis}`,v:fmt(total),s:unit},
-    {k:`?ㅼ＜??2梨?) 쨌 ${basis} ?뚯쑀??,v:fmt(multi),s:`${r2.toFixed(1)}%`},
-    {k:'1梨?,v:fmt(one),s:`${total?(one/total*100).toFixed(1):0}%`},
-    {k:'3梨??댁긽',v:fmt(basis==='媛쒖씤'?ov(basis,region,y,'3梨??댁긽'):ov(basis,region,y,'3梨?)+ov(basis,region,y,'4梨?)+ov(basis,region,y,'5梨꾩씠??)),s:''}]);
-  setInsight(`${region} ${y}??${basis} 湲곗? ?ㅼ＜??2梨??댁긽)? <b>${fmt(multi)}${unit}</b>濡??꾩껜 ?뚯쑀 ${basis}??<b>${r2.toFixed(1)}%</b> <b>(?щ엺/媛援???湲곗?)</b>. <span class="note">??'二쇳깮 ?? 湲곗? 蹂댁쑀 鍮꾩쑉? ?뱤吏묒쨷????쨌 ?꾪뙆?몃쭔? ?룫?꾪뙆????쨌 留ㅻЪ ?꾨떂</span>`);
+    {k:`${region} ${y}년 소유 ${basis}`,v:fmt(total),s:unit},
+    {k:`다주택(2채+) · ${basis} 소유자`,v:fmt(multi),s:`${r2.toFixed(1)}%`},
+    {k:'1채',v:fmt(one),s:`${total?(one/total*100).toFixed(1):0}%`},
+    {k:'3채 이상',v:fmt(basis==='개인'?ov(basis,region,y,'3채 이상'):ov(basis,region,y,'3채')+ov(basis,region,y,'4채')+ov(basis,region,y,'5채이상')),s:''}]);
+  setInsight(`${region} ${y}년 ${basis} 기준 다주택(2채 이상)은 <b>${fmt(multi)}${unit}</b>로 전체 소유 ${basis}의 <b>${r2.toFixed(1)}%</b> <b>(사람/가구 수 기준)</b>. <span class="note">※ '주택 수' 기준 보유 비율은 📊집중도 탭 · 아파트만은 🏢아파트 탭 · 매물 아님</span>`);
   let panels='';
   if(tab==='compose'){
-    panels=`<div class="panel"><h3>?뚯쑀 嫄댁닔蹂?援ъ꽦 <span class="muted">(${region} ${y}??</span></h3><div class="chartbox"><canvas id="cO1"></canvas></div></div>
-      <div class="panel"><h3>?ㅼ＜??鍮꾩쑉 異붿씠 <span class="muted">(${region} 쨌 ${basis}쨌?뚯쑀??湲곗?)</span></h3><div class="chartbox"><canvas id="cO2"></canvas></div></div>`;
+    panels=`<div class="panel"><h3>소유 건수별 구성 <span class="muted">(${region} ${y}년)</span></h3><div class="chartbox"><canvas id="cO1"></canvas></div></div>
+      <div class="panel"><h3>다주택 비율 추이 <span class="muted">(${region} · ${basis}·소유자 기준)</span></h3><div class="chartbox"><canvas id="cO2"></canvas></div></div>`;
   }else if(tab==='region'){
     const rv=state.ownRegView||'trend';
-    const seg=`<div style="grid-column:1/-1;margin-bottom:4px;"><span class="seg"><button class="${rv==='trend'?'on':''}" onclick="setOwnRegView('trend')">?곕룄異붿씠</button><button class="${rv==='rank'?'on':''}" onclick="setOwnRegView('rank')">?쒖쐞(${y}??</button></span></div>`;
+    const seg=`<div style="grid-column:1/-1;margin-bottom:4px;"><span class="seg"><button class="${rv==='trend'?'on':''}" onclick="setOwnRegView('trend')">연도추이</button><button class="${rv==='rank'?'on':''}" onclick="setOwnRegView('rank')">순위(${y}년)</button></span></div>`;
     panels=seg+(rv==='rank'
-      ?`<div class="panel full"><h3>?쒕룄蹂??ㅼ＜??鍮꾩쑉 <span class="muted">(${y}??쨌 ${basis}쨌?뚯쑀??湲곗? 쨌 ?좏깮 媛뺤“)</span></h3><div class="chartbox tall"><canvas id="cO3"></canvas></div></div>`
-      :`<div class="panel full"><h3>?쒕룄蹂??ㅼ＜??鍮꾩쑉 異붿씠 <span class="muted">(${basis}쨌?뚯쑀??湲곗? 쨌 吏??移⑹쑝濡?寃뱀퀜 鍮꾧탳)</span></h3><div class="chartbox tall"><canvas id="cO7"></canvas></div></div>`);
+      ?`<div class="panel full"><h3>시도별 다주택 비율 <span class="muted">(${y}년 · ${basis}·소유자 기준 · 선택 강조)</span></h3><div class="chartbox tall"><canvas id="cO3"></canvas></div></div>`
+      :`<div class="panel full"><h3>시도별 다주택 비율 추이 <span class="muted">(${basis}·소유자 기준 · 지역 칩으로 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cO7"></canvas></div></div>`);
   }else{
-    panels=`<div class="panel full"><h3>?쒕룄 횞 ?뚯쑀嫄댁닔 <span class="muted">(${y}??쨌 ${unit})</span></h3><div class="tablewrap"><table id="cO4"></table></div></div>`;
+    panels=`<div class="panel full"><h3>시도 × 소유건수 <span class="muted">(${y}년 · ${unit})</span></h3><div class="tablewrap"><table id="cO4"></table></div></div>`;
   }
   document.getElementById('grid').innerHTML=toolbar+panels;
   if(tab==='compose'){
     draw('cO1',{type:'doughnut',data:{labels:ORD,datasets:[{data:ORD.map(b=>ov(basis,region,y,b)),backgroundColor:SEQ,borderColor:'#1b2435',borderWidth:2}]},
       options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}${unit} (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
-    draw('cO2',{type:'line',data:{labels:years,datasets:[{label:'?ㅼ＜??鍮꾩쑉',borderColor:'#ffc066',backgroundColor:'transparent',data:years.map(yy=>rate(basis,region,yy))}]},
+    draw('cO2',{type:'line',data:{labels:years,datasets:[{label:'다주택 비율',borderColor:'#ffc066',backgroundColor:'transparent',data:years.map(yy=>rate(basis,region,yy))}]},
       options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
   }else if(tab==='region'){
     if((state.ownRegView||'trend')==='rank'){
-      const sidos=ALL_REGIONS.filter(r=>r!=='?꾧뎅');
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
       const rp=sidos.map(r=>[r,rate(basis,r,y)||0]).sort((a,b)=>b[1]-a[1]);
-      draw('cO3',{type:'bar',data:{labels:rp.map(p=>p[0].replace(/?밸퀎??愿묒뿭???밸퀎?먯튂???밸퀎?먯튂????/,'')),datasets:[{data:rp.map(p=>p[1]),backgroundColor:rp.map(p=>state.regions.includes(p[0])?'#ffc066':'#6ba2ff')}]},
-        options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ?ㅼ＜??${c.parsed.x}%`}}},scales:{x:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
+      draw('cO3',{type:'bar',data:{labels:rp.map(p=>p[0].replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),datasets:[{data:rp.map(p=>p[1]),backgroundColor:rp.map(p=>state.regions.includes(p[0])?'#ffc066':'#6ba2ff')}]},
+        options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 다주택 ${c.parsed.x}%`}}},scales:{x:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
     }else{
       const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
       draw('cO7',{type:'line',data:{labels:years,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',data:years.map(yy=>rate(basis,r,yy))}))},
         options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
     }
   }else{
-    const cols=['珥앷퀎',...ORD];
-    let head='<thead><tr><th>吏??/th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>?ㅼ＜??<br><small>(?뚯쑀??</small></th></tr></thead>';
-    let body='<tbody>'+ALL_REGIONS.map(r=>{const t=ov(basis,r,y,'珥앷퀎');
-      return `<tr><td>${r}</td>`+cols.map(b=>`<td>${fmt(ov(basis,r,y,b))}</td>`).join('')+`<td><b>${t?((t-ov(basis,r,y,'1梨?))/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
+    const cols=['총계',...ORD];
+    let head='<thead><tr><th>지역</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>다주택%<br><small>(소유자)</small></th></tr></thead>';
+    let body='<tbody>'+ALL_REGIONS.map(r=>{const t=ov(basis,r,y,'총계');
+      return `<tr><td>${r}</td>`+cols.map(b=>`<td>${fmt(ov(basis,r,y,b))}</td>`).join('')+`<td><b>${t?((t-ov(basis,r,y,'1채'))/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
     document.getElementById('cO4').innerHTML=head+body;
   }
 }
 
 function noData(name){
   document.getElementById('kpis').innerHTML='';setSub('');
-  setInsight(`<span class="note">${name} ?곗씠?곌? ?놁뒿?덈떎. <code>python fetch_kosis.py</code> 瑜??ㅽ뻾?섏꽭??</span>`);
+  setInsight(`<span class="note">${name} 데이터가 없습니다. <code>python fetch_kosis.py</code> 를 실행하세요.</span>`);
 }
 
-/* ===== ?쒖옉 (??λ맂 ?붾㈃ ?곹깭 蹂듭썝) ===== */
+/* ===== 시작 (저장된 화면 상태 복원) ===== */
 try{Object.assign(state,JSON.parse(localStorage.getItem('housingDash')||'{}'));}catch(e){}
 if(!(state.view in TITLES))state.view='overview';
 if(state.year!==ALL&&!H_YEARS.includes(state.year))state.year=lastOf(H_YEARS);
-state.regions=Array.isArray(state.regions)?state.regions.filter(r=>ALL_REGIONS.includes(r)):['?꾧뎅'];
+state.regions=Array.isArray(state.regions)?state.regions.filter(r=>ALL_REGIONS.includes(r)):['전국'];
 navEl.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.v===state.view));
 buildYearChips();buildRegionChips();render();
 </script>
