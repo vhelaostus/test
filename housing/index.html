@@ -9,6 +9,7 @@
 <script src="age.js" onerror="this.dataset.f=1"></script>
 <script src="supply.js" onerror="this.dataset.f=1"></script>
 <script src="own.js" onerror="this.dataset.f=1"></script>
+<script src="conc.js" onerror="this.dataset.f=1"></script>
 <style>
  :root{--bg:#0e1320;--card:#1b2435;--ink:#f6f9ff;--sub:#c3cee0;--line:#34405a;--acc:#6ba2ff;--acc2:#46dcb2;--warn:#ffc066;}
  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);
@@ -91,7 +92,7 @@ const DEMO=(()=>{const R={'전국':19870,'서울특별시':3100,'경기도':4600
  const Y=['2015','2020','2024'],g={'2015':.86,'2020':.95,'2024':1},o=[];
  for(const[r,b]of Object.entries(R))for(const y of Y)for(const[t,f]of Object.entries(S))o.push({region:r,type:t,year:y,value:Math.round(b*1000*f*g[y])});return o;})();
 const HD=(window.HOUSING_DATA&&window.HOUSING_DATA.length)?window.HOUSING_DATA:DEMO;
-const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[], OWND=window.OWN_DATA||[];
+const TD=window.TENURE_DATA||[], AD=window.AREA_DATA||[], GD=window.AGE_DATA||[], SD=window.SUPPLY_DATA||[], OWND=window.OWN_DATA||[], CONC=window.CONC_DATA||[];
 if(!(window.HOUSING_DATA&&window.HOUSING_DATA.length)) document.getElementById('demoBadge').style.display='inline-block';
 
 /* ===== 상수/순서/색 ===== */
@@ -122,7 +123,7 @@ function clampArea(y){y=+y;return String(Math.min(2024,Math.max(2015,y)));}
 function nearestLE(years,y){y=+y;let best=years[0];for(const a of years)if(+a<=y)best=a;return best;}
 
 /* ===== 상태 ===== */
-const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',ownBasis:'개인',ownTab:'compose'};
+const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',ownBasis:'개인',ownTab:'compose',ownRegView:'trend'};
 const mainRegion=()=>state.regions[0]||'전국';
 window.setSupMode=m=>{state.supMode=m;render();};
 window.setSupMeasure=m=>{state.supMeasure=m;render();};
@@ -130,6 +131,7 @@ window.setSupTab=t=>{state.supTab=t;render();};
 window.setSupRegView=v=>{state.supRegView=v;render();};
 window.setOwnBasis=b=>{state.ownBasis=b;render();};
 window.setOwnTab=t=>{state.ownTab=t;render();};
+window.setOwnRegView=v=>{state.ownRegView=v;render();};
 let charts={};
 if(window.Chart){Chart.defaults.animation=false;   // 애니메이션 제거
   Chart.defaults.elements.line.tension=0;          // 직선 연결
@@ -169,6 +171,7 @@ document.getElementById('foot').innerHTML='출처: 통계청 주택총조사(주
 const TITLES={overview:'종류별 개요',region:'지역별 순위·비교',time:'시점별 추이',area:'평형 (연면적)',age:'노후도 (건축연도)',tenure:'점유형태 (자가/전월세)',supply:'공급 (인허가·착공·준공)',own:'주택소유 (다주택자)'};
 function kpiHTML(items){return items.map(k=>`<div class="kpi"><div class="v">${k.v}${k.s?` <small>${k.s}</small>`:''}</div><div class="k">${k.k}</div></div>`).join('');}
 function render(){
+  try{localStorage.setItem('housingDash',JSON.stringify(state));}catch(e){}
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
   document.getElementById('pageTitle').textContent=TITLES[state.view];
   const g=document.getElementById('grid');g.innerHTML='';
@@ -466,50 +469,114 @@ function renderSupply(){
 /* ===== 8) 주택소유 (다주택자) ===== */
 function renderOwn(){
   if(!OWND.length){noData('주택소유(다주택자)');return;}
-  const basis=state.ownBasis, region=mainRegion(), unit=basis==='개인'?'명':'가구';
+  const tab=state.ownTab||'compose', apt=tab==='apt', conc=tab==='conc', indiv=apt||conc;
+  const basis=indiv?'개인':state.ownBasis, region=apt?'전국':mainRegion(), unit=basis==='개인'?'명':'가구';
   const years=uniq(OWND.filter(d=>d.basis===basis).map(d=>d.year)).sort();
   const y=state.year===ALL?lastOf(years):(years.includes(state.year)?state.year:nearestLE(years,state.year));
   const ORD=basis==='개인'?['1채','2채','3채 이상']:['1채','2채','3채','4채','5채이상'];
-  const ov=(reg,yy,b)=>{const r=OWND.find(d=>d.basis===basis&&d.region===reg&&d.year===yy&&d.band===b);return r?(r.value||0):0;};
-  const total=ov(region,y,'총계')||ORD.reduce((s,b)=>s+ov(region,y,b),0);
-  const one=ov(region,y,'1채'), multi=total-one, rate=total?multi/total*100:0;
-  setSub(`${region} · ${y}년 · ${basis} 기준${state.year===ALL?' (전체→최신)':''} · 다주택=2채 이상 · 자료 ${years[0]}~${years[years.length-1]}`);
+  const ov=(bs,reg,yy,b)=>{const r=OWND.find(d=>d.basis===bs&&d.region===reg&&d.year===yy&&d.band===b);return r?(r.value||0):0;};
+  const rate=(bs,reg,yy)=>{const t=ov(bs,reg,yy,'총계');return t?+((t-ov(bs,reg,yy,'1채'))/t*100).toFixed(1):null;};
+  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
+    <span class="seg"><button class="${state.ownBasis==='개인'?'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('개인')">개인</button><button class="${state.ownBasis==='가구'?'on':''}"${indiv?' style="opacity:.45"':''} onclick="setOwnBasis('가구')">가구</button></span>${indiv?'<span class="muted" style="margin-left:6px;font-size:11.5px;">· 이 탭은 개인 고정</span>':''}
+    <span class="seg" style="margin-left:8px;"><button class="${tab==='compose'?'on':''}" onclick="setOwnTab('compose')">구성·추이</button><button class="${tab==='region'?'on':''}" onclick="setOwnTab('region')">시도별</button><button class="${tab==='conc'?'on':''}" onclick="setOwnTab('conc')">📊 집중도</button><button class="${tab==='apt'?'on':''}" onclick="setOwnTab('apt')">🏢 아파트</button><button class="${tab==='table'?'on':''}" onclick="setOwnTab('table')">표</button></span></div>`;
+
+  if(conc){
+    if(!CONC.length){noData('소유 집중도');return;}
+    const cyears=uniq(CONC.map(d=>d.year)).sort();
+    const yc=state.year===ALL?lastOf(cyears):(cyears.includes(state.year)?state.year:nearestLE(cyears,state.year));
+    const cv=(reg,yy,m)=>{const r=CONC.find(d=>d.region===reg&&d.year===yy&&d.metric===m);return r?(r.value||0):0;};
+    const ownerR=(reg,yy)=>{const t=ov('개인',reg,yy,'총계');return t?+((t-ov('개인',reg,yy,'1채'))/t*100).toFixed(1):null;};
+    const homeR=(reg,yy)=>{const h=cv(reg,yy,'개인소유주택');return h?+((h-ov('개인',reg,yy,'1채'))/h*100).toFixed(1):null;};
+    const orate=ownerR(region,yc), hrate=homeR(region,yc), avg=cv(region,yc,'평균'), homes=cv(region,yc,'개인소유주택');
+    setSub(`${region} · ${yc}년 · 개인·거주지역 기준 · 소유 집중도 (자료 ${cyears[0]}~${cyears[cyears.length-1]})`);
+    document.getElementById('kpis').innerHTML=kpiHTML([
+      {k:'다주택 소유자 비율',v:`${orate}`,s:'% (사람)'},
+      {k:'다주택 보유 주택 비율',v:`${hrate}`,s:'% (주택)'},
+      {k:'1인당 평균 소유주택',v:avg.toFixed(2),s:'채'},
+      {k:`${region} 개인소유주택`,v:fmt(homes),s:'호'}]);
+    setInsight(`${region} ${yc}년 다주택자는 소유자의 <b>${orate}%</b>지만 개인소유주택의 <b>${hrate}%</b>를 보유합니다. 주택 점유율이 사람 비율보다 높을수록 소유가 집중된 것입니다. <span class="note">※개인·거주지역 기준 (공동소유로 약간의 오차 가능)</span>`);
+    document.getElementById('grid').innerHTML=toolbar+`
+      <div class="panel full"><h3>다주택 비율 — 소유자 vs 주택 <span class="muted">(${region}, ${cyears[0]}~${cyears[cyears.length-1]})</span></h3><div class="chartbox tall"><canvas id="cO8"></canvas></div></div>
+      <div class="panel full"><h3>1인당 평균 소유 주택수 추이 <span class="muted">(지역 칩으로 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cO9"></canvas></div></div>`;
+    draw('cO8',{type:'line',data:{labels:cyears,datasets:[
+      {label:'소유자 기준',borderColor:'#6ba2ff',backgroundColor:'transparent',data:cyears.map(yy=>ownerR(region,yy))},
+      {label:'보유 주택 기준',borderColor:'#ffc066',backgroundColor:'transparent',data:cyears.map(yy=>homeR(region,yy))}]},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
+    draw('cO9',{type:'line',data:{labels:cyears,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',data:cyears.map(yy=>cv(r,yy,'평균')||null)}))},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}채`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'채'},grid:{color:'#28324a'}}}})});
+    return;
+  }
+
+  if(apt){   // 전국·개인 — 전체 주택 vs 아파트
+    const tA=ov('개인','전국',y,'총계'), mA=tA-ov('개인','전국',y,'1채');
+    const tP=ov('아파트','전국',y,'총계'), mP=tP-ov('아파트','전국',y,'1채');
+    setSub(`전국 · ${y}년 · 개인·소유자 기준 · 전체 주택 vs 아파트 다주택 비율 (지역 구분 없는 전국 통계)`);
+    document.getElementById('kpis').innerHTML=kpiHTML([
+      {k:`전국 ${y}년 다주택(전체)`,v:fmt(mA),s:`${tA?(mA/tA*100).toFixed(1):0}%`},
+      {k:'다주택(아파트 2채+)',v:fmt(mP),s:`${tP?(mP/tP*100).toFixed(1):0}%`},
+      {k:'아파트 소유자',v:fmt(tP),s:'명'},
+      {k:'아파트 다주택 비중',v:mA?`${(mP/mA*100).toFixed(0)}%`:'-',s:'전체 다주택 중'}]);
+    setInsight(`전국 ${y}년 다주택률은 전체 <b>${tA?(mA/tA*100).toFixed(1):0}%</b> vs 아파트만 <b>${tP?(mP/tP*100).toFixed(1):0}%</b>. 아파트 쪽이 낮아, 다주택의 상당수는 <b>단독·다세대 등 비아파트</b>를 끼고 있습니다. <span class="note">※전국·개인 기준 (아파트는 지역별 자료 없음)</span>`);
+    document.getElementById('grid').innerHTML=toolbar+`
+      <div class="panel full"><h3>다주택률 추이 — 전체 vs 아파트 <span class="muted">(전국·개인)</span></h3><div class="chartbox tall"><canvas id="cO5"></canvas></div></div>
+      <div class="panel full"><h3>소유 건수 구성 비교 <span class="muted">(${y}년 · %)</span></h3><div class="chartbox"><canvas id="cO6"></canvas></div></div>`;
+    draw('cO5',{type:'line',data:{labels:years,datasets:[
+      {label:'전체 주택',borderColor:'#6ba2ff',backgroundColor:'transparent',data:years.map(yy=>rate('개인','전국',yy))},
+      {label:'아파트',borderColor:'#46dcb2',backgroundColor:'transparent',data:years.map(yy=>rate('아파트','전국',yy))}]},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    const BB=['1채','2채','3채 이상'];
+    draw('cO6',{type:'bar',data:{labels:BB,datasets:[
+      {label:'전체 주택',backgroundColor:'#6ba2ff',data:BB.map(b=>tA?+(ov('개인','전국',y,b)/tA*100).toFixed(1):0)},
+      {label:'아파트',backgroundColor:'#46dcb2',data:BB.map(b=>tP?+(ov('아파트','전국',y,b)/tP*100).toFixed(1):0)}]},
+      options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    return;
+  }
+
+  const total=ov(basis,region,y,'총계')||ORD.reduce((s,b)=>s+ov(basis,region,y,b),0);
+  const one=ov(basis,region,y,'1채'), multi=total-one, r2=total?multi/total*100:0;
+  setSub(`${region} · ${y}년 · ${basis} 기준${state.year===ALL?' (전체→최신)':''} · 다주택 비율 = 2채 이상 소유 ${basis} 비율(사람 수 기준)`);
   document.getElementById('kpis').innerHTML=kpiHTML([
     {k:`${region} ${y}년 소유 ${basis}`,v:fmt(total),s:unit},
-    {k:'다주택(2채+)',v:fmt(multi),s:`${rate.toFixed(1)}%`},
+    {k:`다주택(2채+) · ${basis} 소유자`,v:fmt(multi),s:`${r2.toFixed(1)}%`},
     {k:'1채',v:fmt(one),s:`${total?(one/total*100).toFixed(1):0}%`},
-    {k:'3채 이상',v:fmt(basis==='개인'?ov(region,y,'3채 이상'):ov(region,y,'3채')+ov(region,y,'4채')+ov(region,y,'5채이상')),s:''}]);
-  setInsight(`${region} ${y}년 ${basis} 기준 다주택(2채 이상)은 <b>${fmt(multi)}${unit}</b>로 전체 소유 ${basis}의 <b>${rate.toFixed(1)}%</b>. <span class="note">※소유 규모(매물 아님) · 통계청 주택소유통계</span>`);
-  const rrate=(reg,yy)=>{const t=ov(reg,yy,'총계');return t?+((t-ov(reg,yy,'1채'))/t*100).toFixed(1):null;};
-  const tab=state.ownTab||'compose';
-  const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
-    <span class="seg"><button class="${basis==='개인'?'on':''}" onclick="setOwnBasis('개인')">개인</button><button class="${basis==='가구'?'on':''}" onclick="setOwnBasis('가구')">가구</button></span>
-    <span class="seg" style="margin-left:8px;"><button class="${tab==='compose'?'on':''}" onclick="setOwnTab('compose')">구성·추이</button><button class="${tab==='region'?'on':''}" onclick="setOwnTab('region')">시도별</button><button class="${tab==='table'?'on':''}" onclick="setOwnTab('table')">표</button></span></div>`;
+    {k:'3채 이상',v:fmt(basis==='개인'?ov(basis,region,y,'3채 이상'):ov(basis,region,y,'3채')+ov(basis,region,y,'4채')+ov(basis,region,y,'5채이상')),s:''}]);
+  setInsight(`${region} ${y}년 ${basis} 기준 다주택(2채 이상)은 <b>${fmt(multi)}${unit}</b>로 전체 소유 ${basis}의 <b>${r2.toFixed(1)}%</b> <b>(사람/가구 수 기준)</b>. <span class="note">※ '주택 수' 기준 보유 비율은 📊집중도 탭 · 아파트만은 🏢아파트 탭 · 매물 아님</span>`);
   let panels='';
   if(tab==='compose'){
     panels=`<div class="panel"><h3>소유 건수별 구성 <span class="muted">(${region} ${y}년)</span></h3><div class="chartbox"><canvas id="cO1"></canvas></div></div>
-      <div class="panel"><h3>다주택(2채+) 비율 추이 <span class="muted">(${region})</span></h3><div class="chartbox"><canvas id="cO2"></canvas></div></div>`;
+      <div class="panel"><h3>다주택 비율 추이 <span class="muted">(${region} · ${basis}·소유자 기준)</span></h3><div class="chartbox"><canvas id="cO2"></canvas></div></div>`;
   }else if(tab==='region'){
-    panels=`<div class="panel full"><h3>시도별 다주택 비율 <span class="muted">(${y}년 · 선택 강조)</span></h3><div class="chartbox tall"><canvas id="cO3"></canvas></div></div>`;
+    const rv=state.ownRegView||'trend';
+    const seg=`<div style="grid-column:1/-1;margin-bottom:4px;"><span class="seg"><button class="${rv==='trend'?'on':''}" onclick="setOwnRegView('trend')">연도추이</button><button class="${rv==='rank'?'on':''}" onclick="setOwnRegView('rank')">순위(${y}년)</button></span></div>`;
+    panels=seg+(rv==='rank'
+      ?`<div class="panel full"><h3>시도별 다주택 비율 <span class="muted">(${y}년 · ${basis}·소유자 기준 · 선택 강조)</span></h3><div class="chartbox tall"><canvas id="cO3"></canvas></div></div>`
+      :`<div class="panel full"><h3>시도별 다주택 비율 추이 <span class="muted">(${basis}·소유자 기준 · 지역 칩으로 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cO7"></canvas></div></div>`);
   }else{
     panels=`<div class="panel full"><h3>시도 × 소유건수 <span class="muted">(${y}년 · ${unit})</span></h3><div class="tablewrap"><table id="cO4"></table></div></div>`;
   }
   document.getElementById('grid').innerHTML=toolbar+panels;
   if(tab==='compose'){
-    draw('cO1',{type:'doughnut',data:{labels:ORD,datasets:[{data:ORD.map(b=>ov(region,y,b)),backgroundColor:SEQ,borderColor:'#1b2435',borderWidth:2}]},
+    draw('cO1',{type:'doughnut',data:{labels:ORD,datasets:[{data:ORD.map(b=>ov(basis,region,y,b)),backgroundColor:SEQ,borderColor:'#1b2435',borderWidth:2}]},
       options:baseOpts({scales:{},plugins:{legend:{position:'right',labels:{color:'#c3cee0',boxWidth:11}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}${unit} (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}})});
-    draw('cO2',{type:'line',data:{labels:years,datasets:[{label:'다주택 비율',borderColor:'#ffc066',backgroundColor:'transparent',data:years.map(yy=>rrate(region,yy))}]},
+    draw('cO2',{type:'line',data:{labels:years,datasets:[{label:'다주택 비율',borderColor:'#ffc066',backgroundColor:'transparent',data:years.map(yy=>rate(basis,region,yy))}]},
       options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
   }else if(tab==='region'){
-    const sidos=ALL_REGIONS.filter(r=>r!=='전국');
-    const rp=sidos.map(r=>[r,rrate(r,y)||0]).sort((a,b)=>b[1]-a[1]);
-    draw('cO3',{type:'bar',data:{labels:rp.map(p=>p[0].replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),datasets:[{data:rp.map(p=>p[1]),backgroundColor:rp.map(p=>state.regions.includes(p[0])?'#ffc066':'#6ba2ff')}]},
-      options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 다주택 ${c.parsed.x}%`}}},scales:{x:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
+    if((state.ownRegView||'trend')==='rank'){
+      const sidos=ALL_REGIONS.filter(r=>r!=='전국');
+      const rp=sidos.map(r=>[r,rate(basis,r,y)||0]).sort((a,b)=>b[1]-a[1]);
+      draw('cO3',{type:'bar',data:{labels:rp.map(p=>p[0].replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')),datasets:[{data:rp.map(p=>p[1]),backgroundColor:rp.map(p=>state.regions.includes(p[0])?'#ffc066':'#6ba2ff')}]},
+        options:baseOpts({indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 다주택 ${c.parsed.x}%`}}},scales:{x:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0'},grid:{display:false}}}})});
+    }else{
+      const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
+      draw('cO7',{type:'line',data:{labels:years,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',data:years.map(yy=>rate(basis,r,yy))}))},
+        options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>v+'%'},grid:{color:'#28324a'}}}})});
+    }
   }else{
     const cols=['총계',...ORD];
-    let head='<thead><tr><th>지역</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>다주택%</th></tr></thead>';
-    let body='<tbody>'+ALL_REGIONS.map(r=>{const t=ov(r,y,'총계');
-      return `<tr><td>${r}</td>`+cols.map(b=>`<td>${fmt(ov(r,y,b))}</td>`).join('')+`<td><b>${t?((t-ov(r,y,'1채'))/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
+    let head='<thead><tr><th>지역</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th>다주택%<br><small>(소유자)</small></th></tr></thead>';
+    let body='<tbody>'+ALL_REGIONS.map(r=>{const t=ov(basis,r,y,'총계');
+      return `<tr><td>${r}</td>`+cols.map(b=>`<td>${fmt(ov(basis,r,y,b))}</td>`).join('')+`<td><b>${t?((t-ov(basis,r,y,'1채'))/t*100).toFixed(1):'-'}%</b></td></tr>`;}).join('')+'</tbody>';
     document.getElementById('cO4').innerHTML=head+body;
   }
 }
@@ -519,7 +586,12 @@ function noData(name){
   setInsight(`<span class="note">${name} 데이터가 없습니다. <code>python fetch_kosis.py</code> 를 실행하세요.</span>`);
 }
 
-/* ===== 시작 ===== */
+/* ===== 시작 (저장된 화면 상태 복원) ===== */
+try{Object.assign(state,JSON.parse(localStorage.getItem('housingDash')||'{}'));}catch(e){}
+if(!(state.view in TITLES))state.view='overview';
+if(state.year!==ALL&&!H_YEARS.includes(state.year))state.year=lastOf(H_YEARS);
+state.regions=Array.isArray(state.regions)?state.regions.filter(r=>ALL_REGIONS.includes(r)):['전국'];
+navEl.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.v===state.view));
 buildYearChips();buildRegionChips();render();
 </script>
 </body></html>
