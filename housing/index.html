@@ -128,12 +128,13 @@ function clampArea(y){y=+y;return String(Math.min(2024,Math.max(2015,y)));}
 function nearestLE(years,y){y=+y;let best=years[0];for(const a of years)if(+a<=y)best=a;return best;}
 
 /* ===== 상태 ===== */
-const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',ownBasis:'개인',ownTab:'compose',ownRegView:'trend',loanTab:'balance',tenTab:'type',timeTab:'type',timeType:'전체',areaUnit:'평',aptView:'%'};
+const state={view:'overview',year:H_YEARS[H_YEARS.length-1],regions:['전국'],supMode:'year',supMeasure:'인허가',supTab:'trend',supRegView:'overlay',supType:'전체',ownBasis:'개인',ownTab:'compose',ownRegView:'trend',loanTab:'balance',tenTab:'type',timeTab:'type',timeType:'전체',areaUnit:'평',aptView:'%'};
 const mainRegion=()=>state.regions[0]||'전국';
 window.setSupMode=m=>{state.supMode=m;render();};
 window.setSupMeasure=m=>{state.supMeasure=m;render();};
 window.setSupTab=t=>{state.supTab=t;render();};
 window.setSupRegView=v=>{state.supRegView=v;render();};
+window.setSupType=t=>{state.supType=t;render();};
 window.setOwnBasis=b=>{state.ownBasis=b;render();};
 window.setOwnTab=t=>{state.ownTab=t;render();};
 window.setOwnRegView=v=>{state.ownRegView=v;render();};
@@ -464,6 +465,9 @@ function renderSupply(){
   const meas=state.supMeasure;
   const tab=state.supTab||'trend';
   const aggReg=(m,reg)=>isAll?SUP_YEARS.reduce((s,y)=>s+(AN.get(`${m}|${reg}|전체|${y}`)||0),0):(AN.get(`${m}|${reg}|전체|${yFull}`)||0);
+  const styp=state.supType||'전체';
+  const tv=(m,r,y)=>styp==='빌라'?((AN.get(`${m}|${r}|연립|${y}`)||0)+(AN.get(`${m}|${r}|다세대|${y}`)||0)):(AN.get(`${m}|${r}|${styp}|${y}`)||0);
+  const STYP_SEG=`<span class="seg">${['전체','아파트','빌라','단독'].map(t=>`<button class="${styp===t?'on':''}" onclick="setSupType('${t}')">${t}</button>`).join('')}</span>`;
   const subbar=`<div style="grid-column:1/-1;margin:-2px 0 6px;"><span class="seg">
       <button class="${tab==='trend'?'on':''}" onclick="setSupTab('trend')">추세</button>
       <button class="${tab==='region'?'on':''}" onclick="setSupTab('region')">시도별</button>
@@ -477,14 +481,13 @@ function renderSupply(){
       <div class="chartbox tall"><canvas id="cS1"></canvas></div></div>`;
   }else if(tab==='region'){
     const rv=state.supRegView;
-    const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;">
-      <span class="seg"><button class="${rv==='overlay'?'on':''}" onclick="setSupRegView('overlay')">겹쳐보기</button><button class="${rv==='multi'?'on':''}" onclick="setSupRegView('multi')">개별</button></span>${rv==='overlay'?`
-      <span class="seg" style="margin-left:8px;"><button class="${meas==='인허가'?'on':''}" onclick="setSupMeasure('인허가')">인허가</button><button class="${meas==='착공'?'on':''}" onclick="setSupMeasure('착공')">착공</button><button class="${meas==='준공'?'on':''}" onclick="setSupMeasure('준공')">준공</button></span>`:''}</div>`;
+    const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+      <span class="seg"><button class="${rv==='overlay'?'on':''}" onclick="setSupRegView('overlay')">겹쳐보기</button><button class="${rv==='multi'?'on':''}" onclick="setSupRegView('multi')">개별</button></span>${rv==='overlay'?`<span class="seg"><button class="${meas==='인허가'?'on':''}" onclick="setSupMeasure('인허가')">인허가</button><button class="${meas==='착공'?'on':''}" onclick="setSupMeasure('착공')">착공</button><button class="${meas==='준공'?'on':''}" onclick="setSupMeasure('준공')">준공</button></span>`:''}${STYP_SEG}<span class="muted" style="font-size:11.5px;">빌라=연립+다세대</span></div>`;
     if(rv==='overlay'){
-      panels=toolbar+`<div class="panel full"><h3>시도별 ${meas} 추이 <span class="muted">(연도별 · 지역 칩으로 여러 시도 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cS5"></canvas></div></div>`;
+      panels=toolbar+`<div class="panel full"><h3>시도별 ${meas} 추이 — ${styp} <span class="muted">(연도별 · 지역 칩으로 여러 시도 겹쳐 비교)</span></h3><div class="chartbox tall"><canvas id="cS5"></canvas></div></div>`;
     }else{
       const sidos=ALL_REGIONS.filter(r=>r!=='전국');
-      panels=toolbar+`<div style="grid-column:1/-1;margin-bottom:4px;" class="muted">연도별 인허가·착공·준공 · <span style="color:#ffc066">●인허가</span> <span style="color:#6ba2ff">●착공</span> <span style="color:#46dcb2">●준공</span> · ★=선택 지역</div>`
+      panels=toolbar+`<div style="grid-column:1/-1;margin-bottom:4px;" class="muted">${styp} · 연도별 인허가·착공·준공 · <span style="color:#ffc066">●인허가</span> <span style="color:#6ba2ff">●착공</span> <span style="color:#46dcb2">●준공</span> · ★=선택 지역</div>`
         +`<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">`
         +sidos.map((r,i)=>{const sel=state.regions.includes(r);
           return `<div class="panel" style="padding:12px 14px;${sel?'border-color:#ffc066;':''}"><h3 style="font-size:14px;margin-bottom:8px;">${r.replace(/특별시|광역시|특별자치시|특별자치도|도$/,'')}${sel?' ★':''}</h3><div style="position:relative;height:185px;"><canvas id="cSR${i}"></canvas></div></div>`;}).join('')
@@ -508,13 +511,13 @@ function renderSupply(){
   }else if(tab==='region'){
     if(state.supRegView==='overlay'){
       const cols=['#6ba2ff','#46dcb2','#ffc066','#f48fb1','#9b8cff','#ff8a65','#7fe6c9','#9aa7bd','#fb923c','#a78bfa'];
-      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>AN.get(`${meas}|${r}|전체|${y}`)||0)}))},
+      draw('cS5',{type:'line',data:{labels:SUP_YEARS,datasets:state.regions.map((r,i)=>({label:r,borderColor:cols[i%cols.length],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:2,data:SUP_YEARS.map(y=>tv(meas,r,y))}))},
         options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
           scales:{x:{ticks:{color:'#c3cee0'},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
     }else{
       const sidos=ALL_REGIONS.filter(r=>r!=='전국');
       sidos.forEach((r,i)=>{
-        draw('cSR'+i,{type:'line',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:1.5,data:SUP_YEARS.map(y=>AN.get(`${m}|${r}|전체|${y}`)||0)}))},
+        draw('cSR'+i,{type:'line',data:{labels:SUP_YEARS,datasets:MEAS.map(m=>({label:m,borderColor:MEAS_C[m],backgroundColor:'transparent',tension:0,pointRadius:2,borderWidth:1.5,data:SUP_YEARS.map(y=>tv(m,r,y))}))},
           options:baseOpts({plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>items[0].label,label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}호`}}},
             scales:{x:{ticks:{color:'#c3cee0',maxTicksLimit:6,font:{size:10}},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v),font:{size:10},maxTicksLimit:5},grid:{color:'#28324a'}}}})});
       });
@@ -675,7 +678,7 @@ function renderLoan(){
     {k:'전세자금대출 잔액',v:f1(je),s:'조원'},
     {k:'가계대출 중 주택담보',v:ga?`${(hb/ga*100).toFixed(0)}%`:'-',s:''},
     {k:'주택담보 금리',v:rt!=null?rt.toFixed(2):'-',s:`% (${ymd(ymR)})`}]);
-  setInsight(`${ymd(ymB)} 주택담보대출 잔액 <b>${f1(hb)}조원</b> · 전세자금대출 <b>${f1(je)}조원</b> · 주택담보 금리 <b>${rt!=null?rt.toFixed(2):'-'}%</b>. <span class="note">※한국은행 · 전국 단위 · 잔액=조원</span>`);
+  setInsight(`${ymd(ymB)} 주택담보대출 잔액 <b>${f1(hb)}조원</b> · 전세자금대출 <b>${f1(je)}조원</b> · 주택담보 금리 <b>${rt!=null?rt.toFixed(2):'-'}%</b>. <span class="note">※전세대출은 주택담보대출에 미포함(‘기타’에 포함) · 한국은행·전국·조원</span>`);
   const toolbar=`<div style="grid-column:1/-1;margin-bottom:6px;"><span class="seg"><button class="${lt==='balance'?'on':''}" onclick="setLoanTab('balance')">잔액</button><button class="${lt==='rate'?'on':''}" onclick="setLoanTab('rate')">금리</button></span></div>`;
   const LC={'주택담보':'#6ba2ff','전세':'#46dcb2','정책':'#ffc066','기타':'#9aa7bd'};
   if(lt==='rate'){
@@ -685,14 +688,17 @@ function renderLoan(){
     return;
   }
   const KIND=['주택담보','전세','정책','기타'];
+  const LLBL={'주택담보':'주택담보','전세':'전세(→기타에 포함)','정책':'정책(참고)','기타':'기타'};
   const Y=[];for(let yy=2004;yy<=2025;yy++)Y.push(String(yy));
   const decv=(m,yr)=>{const c=months.filter(ym=>ym.slice(0,4)===yr&&lv(m,ym)!=null);return c.length?lv(m,c[c.length-1]):null;};
   document.getElementById('grid').innerHTML=toolbar+`
-    <div class="panel full"><h3>대출 잔액 월별 추이 <span class="muted">(주택담보·전세·정책·기타 · 조원)</span></h3><div class="chartbox tall"><canvas id="cL1"></canvas></div></div>
-    <div class="panel full"><h3>연도별(연말) 잔액 <span class="muted">(주택담보·전세 · 조원)</span></h3><div class="chartbox tall"><canvas id="cL2"></canvas></div></div>`;
-  draw('cL1',{type:'line',data:{labels:months,datasets:KIND.map(k=>({label:k,borderColor:LC[k],backgroundColor:'transparent',pointRadius:0,borderWidth:1.6,spanGaps:true,data:months.map(ym=>lv(k,ym))}))},
+    <div style="grid-column:1/-1;background:#12243f;border-left:3px solid var(--acc);padding:9px 13px;border-radius:0 8px 8px 0;font-size:13px;color:#dce9ff;">
+      구성: <b style="color:#6ba2ff">주택담보</b> + <b style="color:#9aa7bd">기타</b> = 가계대출 전체. <b style="color:#46dcb2">전세</b>·<b style="color:#ffc066">정책</b>은 그 안의 <b>참고치(중복)</b>라 합산 ✕. → <b>전세대출은 주택담보대출이 아니라 ‘기타’에 들어있습니다.</b></div>
+    <div class="panel full"><h3>대출 잔액 월별 추이 <span class="muted">(조원 · 전세·정책은 참고)</span></h3><div class="chartbox tall"><canvas id="cL1"></canvas></div></div>
+    <div class="panel full"><h3>연도별(연말) 잔액 <span class="muted">(주택담보 vs 전세 · 조원 · 별개 분류 아님)</span></h3><div class="chartbox tall"><canvas id="cL2"></canvas></div></div>`;
+  draw('cL1',{type:'line',data:{labels:months,datasets:KIND.map(k=>({label:LLBL[k],borderColor:LC[k],backgroundColor:'transparent',pointRadius:0,borderWidth:1.6,spanGaps:true,data:months.map(ym=>lv(k,ym))}))},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f1(c.parsed.y)}조`}}},scales:{x:{ticks:{color:'#c3cee0',maxTicksLimit:16},grid:{color:'#28324a'}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
-  draw('cL2',{type:'bar',data:{labels:Y,datasets:[{label:'주택담보',backgroundColor:LC['주택담보'],data:Y.map(yr=>decv('주택담보',yr))},{label:'전세',backgroundColor:LC['전세'],data:Y.map(yr=>decv('전세',yr))}]},
+  draw('cL2',{type:'bar',data:{labels:Y,datasets:[{label:'주택담보',backgroundColor:LC['주택담보'],data:Y.map(yr=>decv('주택담보',yr))},{label:'전세(주담대 아님·기타)',backgroundColor:LC['전세'],data:Y.map(yr=>decv('전세',yr))}]},
     options:baseOpts({plugins:{legend:{labels:{color:'#c3cee0',boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f1(c.parsed.y)}조`}}},scales:{x:{ticks:{color:'#c3cee0'},grid:{display:false}},y:{ticks:{color:'#c3cee0',callback:v=>fmt(v)},grid:{color:'#28324a'}}}})});
 }
 
